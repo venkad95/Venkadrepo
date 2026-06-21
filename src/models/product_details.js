@@ -19,7 +19,12 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true
         },
 
-        product_qty: {
+        morning_qty: {
+            type: DataTypes.FLOAT,
+            allowNull: true
+        },
+
+        evening_qty: {
             type: DataTypes.FLOAT,
             allowNull: true
         },
@@ -38,9 +43,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.FLOAT,
             allowNull: true
         },
-
-        total_days: {
-            type: DataTypes.INTEGER,
+        
+        purchased_liter_amount:{
+            type: DataTypes.DECIMAL(10,2),
             allowNull: true
         },
 

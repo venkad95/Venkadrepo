@@ -14,7 +14,10 @@
     "dialect": "postgres"
   },
   "production": {
-    "use_env_variable": "postgresql://neondb_owner:npg_UO4SNspHqTE9@ep-sparkling-math-aoohscht.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require",
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
     "dialect": "postgres"
   }
 }

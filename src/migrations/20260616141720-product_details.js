@@ -23,7 +23,11 @@ module.exports = {
           type: Sequelize.STRING,
           allowNull: true
         },
-        product_qty: {
+        morning_qty: {
+          type: Sequelize.FLOAT,
+          allowNull: true
+        },
+        evening_qty: {
           type: Sequelize.FLOAT,
           allowNull: true
         },
@@ -39,8 +43,8 @@ module.exports = {
           type: Sequelize.FLOAT,
           allowNull: true
         },
-        total_days: {
-          type: Sequelize.INTEGER,
+        purchased_liter_amount: {
+          type: Sequelize.DECIMAL(10,2),
           allowNull: true
         },
         total_amount: {

@@ -32,13 +32,13 @@ exports.login = async (req, res) => {
         role: user.role
       },
       process.env.JWT_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: '1d' }
     );
 
     const refreshToken = jwt.sign(
       { userId: user.uuid },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: '2d' }
     );
 
     await db.UserDetails.update(
@@ -107,14 +107,35 @@ exports.signup = async (req, res) => {
             role: roleName || 'client',
             status: false
         });
-
+        const accessToken = jwt.sign(
+          {
+            userId: user.uuid,
+            email: user.email,
+            role: user.role
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: '1d' }
+        );
+    
+        const refreshToken = jwt.sign(
+          { userId: user.uuid },
+          process.env.REFRESH_TOKEN_SECRET,
+          { expiresIn: '2d' }
+        );
+    
+        await db.UserDetails.update(
+          { accessToken, refreshToken },
+          { where: { uuid: user.uuid } }
+        );
         return res.status(201).json({
             success: true,
             message: 'User registered successfully',
             data: {
                 uuid: user.uuid,
                 firstName: user.firstName,
-                email: user.email
+                email: user.email,
+                accessToken,
+                refreshToken,
             }
         });
 
@@ -161,6 +182,26 @@ exports.getOverAllDashboardList = async (req, res) =>{
           getDashboard
         }
       }
+    });
+  }
+}
+
+exports.logout  = async (req, res)=>{
+  try{
+    const userExits = await db.UserDetails.findOne({where:{uuid : req.user.userId}});
+    if(!userExits){
+      return;
+    }
+    await userExits.update({accessToken:null, refreshToken:null});
+    return res.status(200).json({
+      success: true,
+      message: 'Logout Successful',
+    });
+  }
+  catch(err){
+    return res.status(500).json({
+      success: false,
+      message: err.message
     });
   }
 }

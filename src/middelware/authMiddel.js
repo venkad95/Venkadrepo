@@ -1,17 +1,14 @@
 const jwt = require('jsonwebtoken');
 
-exports.checkaccessToken = (req, res, next) => {
-    console.log(req.headers.authorization);
-        
+exports.checkaccessToken = (req, res, next) => {        
     const authHeader = req.headers.authorization;
-
     if (!authHeader) {
         return res.status(401).json({
             message: 'Token Missing'
         });
     }
     const token = authHeader.split(' ')[1];
-    try {
+    try {        
         const decoded = jwt.verify(
             token,
             process.env.JWT_SECRET
@@ -20,6 +17,8 @@ exports.checkaccessToken = (req, res, next) => {
         next();
 
     } catch (error) {
+        console.log(error);
+        
         return res.status(401).json({
             message: 'Invalid Token'
         });
