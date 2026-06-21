@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import AuthCard from "../components/AuthCard";
 import { Link } from "react-router-dom";
 import api from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -35,7 +36,16 @@ const Register = () => {
         return;
       }    
       const response = await api.post("/auth/signup",formData);
+      const userData = response.data;
       alert(response.data.message);
+      localStorage.setItem("token",response.data.accessToken);
+      localStorage.setItem("user",JSON.stringify(response.data.user));
+      if(userData.role == 'owner'){
+        navigate("/dashboard");
+      }
+      else{
+        navigate("/client-dashboard")
+      }
     } catch (error: any) {
       alert(error.response?.data?.message);
     }

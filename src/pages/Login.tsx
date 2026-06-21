@@ -22,9 +22,15 @@ const Login = () =>{
   const handleLogin = async () => {
     try {
       const response = await api.post("/auth/login", formData);
+      const userData = response.data.user;
       localStorage.setItem("token",response.data.accessToken);
       localStorage.setItem("user",JSON.stringify(response.data.user));
-      navigate("/dashboard");
+      if(userData.role == 'owner'){
+        navigate("/dashboard");
+      }
+      else{
+        navigate("/client-dashboard")
+      }
 
     } catch (error: any) {
       alert(

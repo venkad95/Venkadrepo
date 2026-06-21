@@ -3,6 +3,7 @@ import '../assets/styles/Dashboard.css';
 import ClientHistoryModal from '../components/ClientHistoryModal.tsx';
 import React from "react";
 import api from "../services/api.tsx";
+import moment from "moment";
 
 function Dashboard() {
   const [selectedClient, setSelectedClient] = useState<any>(null);
@@ -54,6 +55,11 @@ function Dashboard() {
             <h3>Total Amount</h3>
             <span>{adminDashboard.totalAmount}</span>
           </div>
+
+          <div className="card">
+            <h3>Total Product</h3>
+            <span>2</span>
+          </div>
         </div>
 
         <div className="table-wrapper">
@@ -77,7 +83,7 @@ function Dashboard() {
                   <td>{client.lastName}</td>
                   <td>{client.email}</td>
                   <td>{client.mobileNumber}</td>
-                  <td>{client.createdAt}</td>
+                  <td>{moment(client.createdAt).format("DD/MM/YYYY")}</td>
                   <td>{client.status ? 'Active' : 'InActive'}</td>
 
                   <td>

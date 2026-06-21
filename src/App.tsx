@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Layout from './components/Layout'
 import Dashboard from "./pages/Dashboard";
+import ClientDashboard from "./pages/ClientDashboard";
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/client-dashboard" element={<ClientDashboard/>}/>
       </Routes>
     </Layout>
   </BrowserRouter>
