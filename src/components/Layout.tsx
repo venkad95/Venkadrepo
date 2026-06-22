@@ -9,7 +9,7 @@ type LayoutProps = {
 function Layout({ children }: LayoutProps) {
   return (
     <>
-      <Header title="My Business App" />
+      <Header title="VSV Smart Milk App" />
 
       <main className="content">
         {children}

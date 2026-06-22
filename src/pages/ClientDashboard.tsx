@@ -4,6 +4,7 @@ import "../assets/styles/ClientDashboard.css";
 import React from "react";
 import api from "../services/api";
 import moment from "moment";
+import Loader from "../components/Loader";
 
 const Dashboard = () => {
     interface SummaryData {
@@ -18,32 +19,22 @@ const Dashboard = () => {
     const [selectedMonth, setSelectedMonth] = useState("");
     const [historyData, setHistoryData] = useState([]);
     const [summaryData, setSummryData] = useState<SummaryData[]>([]);
+          const [loading, setLoading] = useState(false);
 
-    const data = [
-        {
-            month: "Jun-2026",
-            productName: "Milk",
-            liters: 120,
-            amount: 6240,
-        },
-        {
-            month: "May-2026",
-            productName: "Milk",
-            liters: 140,
-            amount: 7280,
-        },
-    ];
     useEffect(()=>{
         clientSummary();
     },[])
     const clientSummary  = async ()=>{
+        setLoading(true);
         try{
             const response = await api.get('/product/client-summary');
+            setLoading(false);
             if(response.data){
                 setSummryData(response.data)
             }
         }
         catch(err){
+            setLoading(false)
             console.log(err);
             
         }
@@ -56,21 +47,24 @@ const Dashboard = () => {
             month,
             "MMM-YYYY"
           ).format("YYYY-MM");
+          setLoading(true);
         try {
 
             const response = await api.get(
                 `/product/client-history/${formattedMonth}`
             );
-
+            setLoading(false)
             setHistoryData(response.data);
             setSelectedMonth(month);
 
             setShowHistoryModal(true);
 
         } catch (error) {
+            setLoading(false)
             console.log(error);
         }
     };
+    if(loading) return <Loader/>
 
     return (
         <div className="dashboard">

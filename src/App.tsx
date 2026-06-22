@@ -7,15 +7,20 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Layout from './components/Layout'
 import Dashboard from "./pages/Dashboard";
 import ClientDashboard from "./pages/ClientDashboard";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import HomePage from "./pages/HomePage";
 
 
 function App() {
 
   return (
+    <>
+    <ToastContainer/>
     <BrowserRouter>
     <Layout>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<HomePage/>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -24,6 +29,7 @@ function App() {
       </Routes>
     </Layout>
   </BrowserRouter>
+    </>
   )
 }
 

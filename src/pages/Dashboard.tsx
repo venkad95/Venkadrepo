@@ -4,6 +4,7 @@ import ClientHistoryModal from '../components/ClientHistoryModal.tsx';
 import React from "react";
 import api from "../services/api.tsx";
 import moment from "moment";
+import Loader from "../components/Loader.tsx";
 
 function Dashboard() {
   const [selectedClient, setSelectedClient] = useState<any>(null);
@@ -19,9 +20,7 @@ function Dashboard() {
     try {
       setLoading(true);
 
-      const res = await api.get("/auth/getuserswithdashbaord");
-      console.log(res,'----');
-      
+      const res = await api.get("/auth/getuserswithdashbaord");      
       // adjust based on your backend structure
       setClients(res.data.users.usersList);
       setAdminDashboard(res.data.users.dashboardData.getDashboard[0]);
@@ -33,7 +32,7 @@ function Dashboard() {
     }
   };
 
-
+  if(loading) return <Loader/>
   return (
     <>
       <div className="dashboard-container">
