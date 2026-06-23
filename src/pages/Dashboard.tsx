@@ -11,16 +11,24 @@ function Dashboard() {
   const [clients, setClients] = useState<any[]>([]);
   const [adminDashboard, setAdminDashboard] = useState<any>({});
   const [loading, setLoading] = useState(false);
+  const [userName, setUserName] = useState(); // Replace with dynamic user data if available
+  const [timeBasedMessage, setTimeBasedMessage] = useState("");
 
   useEffect(() => {
     fetchClients();
+    setGreetingMessage();
+    const localStorageUser = localStorage.getItem("user");
+    if (localStorageUser) {
+      const user = JSON.parse(localStorageUser); // Parse the JSON string
+      setUserName(user.firstName || "User"); // Set the first name or default to "User"
+    }
   }, []);
 
   const fetchClients = async () => {
     try {
       setLoading(true);
 
-      const res = await api.get("/auth/getuserswithdashbaord");      
+      const res = await api.get("/auth/getuserswithdashbaord");
       // adjust based on your backend structure
       setClients(res.data.users.usersList);
       setAdminDashboard(res.data.users.dashboardData.getDashboard[0]);
@@ -31,13 +39,28 @@ function Dashboard() {
       setLoading(false);
     }
   };
+  const setGreetingMessage = () => {
+    const currentHour = new Date().getHours();
+    if (currentHour < 12) {
+      setTimeBasedMessage("Good Morning");
+    } else if (currentHour < 18) {
+      setTimeBasedMessage("Good Afternoon");
+    } else {
+      setTimeBasedMessage("Good Evening");
+    }
+  };
 
-  if(loading) return <Loader/>
+  if (loading) return <Loader />
   return (
     <>
       <div className="dashboard-container">
+        <div className="dashboard-header">
+          <h1>
+            Hi, {userName}! {timeBasedMessage}
+          </h1>
+        </div>
 
-        <h2>Milk Management Dashboard</h2>
+        <h3>Welcome to Dashboard</h3>
 
         <div className="summary-cards">
           <div className="card">

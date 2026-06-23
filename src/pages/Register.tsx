@@ -43,14 +43,9 @@ const Register = () => {
       setLoading(false)
       const userData = response.data;
       toast.success(response.data.message);
-      localStorage.setItem("token",userData.data.accessToken);
-      localStorage.setItem("user",JSON.stringify(userData.data.user));
-      if(userData.role == 'owner'){
-        navigate("/dashboard");
-      }
-      else{
-        navigate("/client-dashboard")
-      }
+      // localStorage.setItem("token",userData.data.accessToken);
+      // localStorage.setItem("user",JSON.stringify(userData.data.user));
+        navigate("/otp-verify");
     } catch (error: any) {
       setLoading(false)
       toast.error(error.response?.data?.message);

@@ -13,32 +13,52 @@ const Dashboard = () => {
         total_liters: number;
         amount: number;
         total_days: number;
-      }
+    }
     const [showModal, setShowModal] = useState(false);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState("");
     const [historyData, setHistoryData] = useState([]);
     const [summaryData, setSummryData] = useState<SummaryData[]>([]);
-          const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [userName, setUserName] = useState(); // Replace with dynamic user data if available
+    const [timeBasedMessage, setTimeBasedMessage] = useState("");
 
-    useEffect(()=>{
+
+    useEffect(() => {
         clientSummary();
-    },[])
-    const clientSummary  = async ()=>{
+        setGreetingMessage();
+        const localStorageUser = localStorage.getItem("user");
+        if (localStorageUser) {
+            const user = JSON.parse(localStorageUser); // Parse the JSON string
+            setUserName(user.firstName || "User"); // Set the first name or default to "User"
+        }
+    }, [])
+    const clientSummary = async () => {
         setLoading(true);
-        try{
+        try {
             const response = await api.get('/product/client-summary');
             setLoading(false);
-            if(response.data){
+            if (response.data) {
                 setSummryData(response.data)
             }
         }
-        catch(err){
+        catch (err) {
             setLoading(false)
             console.log(err);
-            
+
         }
     }
+
+    const setGreetingMessage = () => {
+        const currentHour = new Date().getHours();
+        if (currentHour < 12) {
+          setTimeBasedMessage("Good Morning");
+        } else if (currentHour < 18) {
+          setTimeBasedMessage("Good Afternoon");
+        } else {
+          setTimeBasedMessage("Good Evening");
+        }
+      };
 
     const handleView = async (month: string) => {
         setSelectedMonth(month);
@@ -46,8 +66,8 @@ const Dashboard = () => {
         const formattedMonth = moment(
             month,
             "MMM-YYYY"
-          ).format("YYYY-MM");
-          setLoading(true);
+        ).format("YYYY-MM");
+        setLoading(true);
         try {
 
             const response = await api.get(
@@ -64,13 +84,13 @@ const Dashboard = () => {
             console.log(error);
         }
     };
-    if(loading) return <Loader/>
+    if (loading) return <Loader />
 
     return (
         <div className="dashboard">
 
             <div className="dashboard-header">
-                <h2>Welcome Kumar</h2>
+                <h2>Welcome {userName} ! {timeBasedMessage}</h2>
 
                 <button
                     className="add-btn"

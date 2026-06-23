@@ -51,7 +51,7 @@ const Login = () =>{
   if (loading) return <Loader />;
   return (
     <AuthCard
-      title="Welcome Back"
+      title="Welcome"
       subtitle="Sign in to continue"
     >
       <input

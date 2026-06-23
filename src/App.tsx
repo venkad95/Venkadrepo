@@ -10,6 +10,10 @@ import ClientDashboard from "./pages/ClientDashboard";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import HomePage from "./pages/HomePage";
+import About from "./components/About";
+import Contact from "./components/Contact";
+import GreetingPage from "./pages/GreetingPage";
+import OtpVerify from "./pages/OtpVerify";
 
 
 function App() {
@@ -20,6 +24,10 @@ function App() {
     <BrowserRouter>
     <Layout>
       <Routes>
+        <Route path="/" element={<HomePage/>} />
+        <Route path="/otp-verify" element={<OtpVerify/>} />
+        <Route path="/about" element={<About/>} />
+        <Route path="/contact" element={<Contact/>} />
         <Route path="/" element={<HomePage/>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

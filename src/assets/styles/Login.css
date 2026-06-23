@@ -1,64 +1,77 @@
-/* =========================
-   LOGIN WRAPPER (BACKGROUND)
-========================= */
-
 .login-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+
+  /* Dairy brand background */
+  background: url("/milk-bg.jpg") center/cover no-repeat;
+  position: relative;
+}
+
+/* dark overlay for readability */
+.login-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 50, 20, 0.55);
+}
+
+/* card must stay above overlay */
+.login-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+
+  padding: 35px;
+  border-radius: 18px;
+
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  text-align: center;
 }
 
 /* =========================
-   LOGIN CARD
+   TITLE STYLE (DAIRY BRAND)
 ========================= */
 
-.login-card {
-  width: 100%;
-  max-width: 420px;
-  background: white;
-  padding: 32px;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-  animation: fadeIn 0.4s ease-in-out;
-}
-
-/* Title */
 .login-card h2 {
-  text-align: center;
-  margin-bottom: 6px;
-  font-size: 22px;
-  color: #111;
+  font-size: 24px;
+  color: #1b5e20;
+  margin-bottom: 5px;
 }
 
-/* Subtitle */
 .subtext {
-  text-align: center;
   font-size: 14px;
-  color: #777;
+  color: #666;
   margin-bottom: 20px;
 }
 
 /* =========================
-   INPUT FIELDS
+   INPUTS (SOFT GREEN STYLE)
 ========================= */
 
 .login-card input {
   width: 100%;
   padding: 12px;
   margin-bottom: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+
+  border: 1px solid #c8e6c9;
+  border-radius: 10px;
+
   font-size: 14px;
   outline: none;
+
   transition: 0.2s;
 }
 
 .login-card input:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 2px rgba(79,70,229,0.15);
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 2px rgba(46,125,50,0.2);
 }
 
 /* =========================
@@ -67,12 +80,12 @@
 
 .forgot-link {
   text-align: right;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .forgot-link a {
   font-size: 13px;
-  color: #4f46e5;
+  color: #2e7d32;
   text-decoration: none;
 }
 
@@ -81,23 +94,29 @@
 }
 
 /* =========================
-   BUTTON
+   LOGIN BUTTON (DAIRY GREEN)
 ========================= */
 
 .login-btn {
   width: 100%;
   padding: 12px;
-  background: #4f46e5;
+
+  background: #2e7d32;
   color: white;
+
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
+
   font-size: 15px;
+  font-weight: 600;
+
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.3s;
 }
 
 .login-btn:hover {
-  background: #4338ca;
+  background: #1b5e20;
+  transform: translateY(-2px);
 }
 
 /* =========================
@@ -105,68 +124,30 @@
 ========================= */
 
 .register-text {
-  text-align: center;
   margin-top: 15px;
   font-size: 13px;
   color: #444;
 }
 
 .register-text a {
-  color: #4f46e5;
+  color: #2e7d32;
+  font-weight: 600;
   text-decoration: none;
-  font-size: 13px;
-}
-
-.register-text a:hover {
-  text-decoration: underline;
 }
 
 /* =========================
-   ANIMATION
+   MOBILE RESPONSIVE
 ========================= */
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+@media (max-width: 600px) {
 
-/* =========================
-   TABLET VIEW
-========================= */
-
-@media (max-width: 992px) {
   .login-card {
-    max-width: 380px;
-    padding: 28px;
+    padding: 22px;
+    border-radius: 14px;
   }
 
   .login-card h2 {
     font-size: 20px;
-  }
-}
-
-/* =========================
-   MOBILE VIEW
-========================= */
-
-@media (max-width: 600px) {
-  .login-wrapper {
-    padding: 15px;
-  }
-
-  .login-card {
-    padding: 22px;
-    border-radius: 10px;
-  }
-
-  .login-card h2 {
-    font-size: 18px;
   }
 
   .subtext {
@@ -174,21 +155,15 @@
   }
 
   .login-card input {
-    font-size: 14px;
     padding: 10px;
-  }
-
-  .forgot-link a {
-    font-size: 12px;
-  }
-
-  .register-text,
-  .register-text a {
-    font-size: 8;
   }
 
   .login-btn {
     font-size: 14px;
-    padding: 10px;
+  }
+
+  .register-text,
+  .forgot-link a {
+    font-size: 12px;
   }
 }

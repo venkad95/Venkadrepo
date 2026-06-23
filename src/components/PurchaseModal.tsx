@@ -111,11 +111,10 @@ const PurchaseModal = ({ onClose, onSuccess }: PurchaseModalProps) => {
                     </button>
 
                     <button className="save-btn" disabled={saving} onClick={handleSave}>
-                        Save Purchase
                         {saving ? (
                             <div className="btn-spinner"></div>
                         ) : (
-                            "Save"
+                            "Save Purchase"
                         )}
                     </button>
                 </div>

@@ -17,7 +17,7 @@ th, td {
 }
 
 th {
-  background: #4f46e5;
+  background: #02750a;
   color: white;
 }
 
@@ -75,7 +75,7 @@ th {
 ========================= */
 
 .add-btn {
-  background: #4f46e5;
+  background: #02750a;
   color: white;
   border: none;
   padding: 12px 18px;
@@ -84,7 +84,7 @@ th {
 }
 
 .view-btn {
-  background: #2563eb;
+  background: #02750a;
   color: white;
   border: none;
   padding: 6px 10px;
@@ -153,6 +153,7 @@ th {
   align-items: center;
   padding: 15px;
   border-bottom: 1px solid #eee;
+  background: #02750a;
 }
 
 .close-btn {
@@ -244,6 +245,7 @@ th {
 
   .modal-header h2 {
     font-size: 16px;
+    background: #02750a;
   }
 
   .view-btn,
