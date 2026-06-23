@@ -51,6 +51,12 @@ module.exports = (sequelize, DataTypes) => {
             onDelete: 'CASCADE'
         });
     };
+    UserDetails.associate = (models) => {
+        UserDetails.hasMany(models.AcknowledgeDetails, {
+            foreignKey: 'user_id',
+            onDelete: 'CASCADE'
+        });
+    };
 
     return UserDetails;
 };
