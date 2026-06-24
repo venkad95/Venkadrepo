@@ -5,6 +5,7 @@ import React from "react";
 import api from "../services/api";
 import moment from "moment";
 import Loader from "../components/Loader";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
     interface SummaryData {
@@ -17,11 +18,14 @@ const Dashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState("");
-    const [historyData, setHistoryData] = useState([]);
+    const [historyData, setHistoryData] = useState<any[]>([]);
     const [summaryData, setSummryData] = useState<SummaryData[]>([]);
+    const [clientDashboard, setClientDashboard] = useState<any>({});
     const [loading, setLoading] = useState(false);
     const [userName, setUserName] = useState(); // Replace with dynamic user data if available
     const [timeBasedMessage, setTimeBasedMessage] = useState("");
+    const [editingRow, setEditingRow] = useState<number | null>(null);
+    const [editedRowData, setEditedRowData] = useState<any>({});
 
 
     useEffect(() => {
@@ -39,7 +43,9 @@ const Dashboard = () => {
             const response = await api.get('/product/client-summary');
             setLoading(false);
             if (response.data) {
-                setSummryData(response.data)
+
+                setSummryData(response.data.users.usersList || []);
+                setClientDashboard(response.data.users.dashboardData.dashboard[0] || {});
             }
         }
         catch (err) {
@@ -52,13 +58,13 @@ const Dashboard = () => {
     const setGreetingMessage = () => {
         const currentHour = new Date().getHours();
         if (currentHour < 12) {
-          setTimeBasedMessage("Good Morning");
+            setTimeBasedMessage("Good Morning");
         } else if (currentHour < 18) {
-          setTimeBasedMessage("Good Afternoon");
+            setTimeBasedMessage("Good Afternoon");
         } else {
-          setTimeBasedMessage("Good Evening");
+            setTimeBasedMessage("Good Evening");
         }
-      };
+    };
 
     const handleView = async (month: string) => {
         setSelectedMonth(month);
@@ -84,6 +90,46 @@ const Dashboard = () => {
             console.log(error);
         }
     };
+
+    const handleEditRow = (index: number, item: any) => {
+        setEditingRow(index);
+        setEditedRowData({ ...item }); // Pre-fill the row data for editing
+      };
+      
+      const handleSaveEdit = async (index: number) => {
+        try {
+            const changedFields: any = {};
+            if (editedRowData.morning_qty !== historyData[index].morning_qty) {
+                changedFields.morning_qty = editedRowData.morning_qty;
+            }
+            if (editedRowData.evening_qty !== historyData[index].evening_qty) {
+                changedFields.evening_qty = editedRowData.evening_qty;
+            }
+            const response = await api.put(`/product/update-productqty/${editedRowData.uuid}`, {
+                uuid: editedRowData.uuid,
+                ...changedFields
+            });
+          if (response.data.success) {
+            toast.success(response.data.message);
+            const updatedHistoryData = [...historyData];
+            updatedHistoryData[index] = editedRowData;
+            setHistoryData(updatedHistoryData);
+            setEditingRow(null);
+            handleView(selectedMonth); // Refresh the history data after saving
+          } else {
+            toast.error("Failed to update row. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error updating row:", error);
+          toast.error("An error occurred. Please try again.");
+        }
+      };
+      
+      const handleCancelEdit = () => {
+        setEditingRow(null);
+        setEditedRowData({});
+      };
+
     if (loading) return <Loader />
 
     return (
@@ -104,17 +150,17 @@ const Dashboard = () => {
 
                 <div className="summary-card">
                     <h4>Total Liters</h4>
-                    <span>520 L</span>
+                    <span>{clientDashboard.total_liters}L</span>
                 </div>
 
                 <div className="summary-card">
                     <h4>Total Amount</h4>
-                    <span>₹27,040</span>
+                    <span>₹{clientDashboard.total_amount}</span>
                 </div>
 
                 <div className="summary-card">
                     <h4>Total Purchases</h4>
-                    <span>35</span>
+                    <span>{clientDashboard.total_days}</span>
                 </div>
 
             </div>
@@ -135,6 +181,7 @@ const Dashboard = () => {
                     <tbody>
                         {summaryData.map((item, index) => (
                             <tr key={index}>
+
                                 <td>{item.month}</td>
                                 <td>{item.total_days}</td>
                                 <td>{item.product_name}</td>
@@ -176,6 +223,7 @@ const Dashboard = () => {
                             <table>
                                 <thead>
                                     <tr>
+                                        <th>Action</th>
                                         <th>Date</th>
                                         <th>Product</th>
                                         <th>Morning</th>
@@ -186,12 +234,53 @@ const Dashboard = () => {
 
                                 <tbody>
 
-                                    {historyData.map((item: any) => (
+                                    {historyData.map((item: any, index:number) => (
                                         <tr key={item.id}>
+                                            <td>
+                                                {editingRow === index ? (
+                                                    <>
+                                                        <button className="save-btn" onClick={() => handleSaveEdit(index)}>
+                                                            Save
+                                                        </button>
+                                                        <button className="cancel-btn" onClick={() => handleCancelEdit()}>
+                                                            Cancel
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <button className="edit-btn" onClick={() => handleEditRow(index, item)}>
+                                                        ✎
+                                                    </button>
+                                                )}
+                                            </td>
                                             <td>{item.buying_date}</td>
                                             <td>{item.product_name}</td>
-                                            <td>{item.morning_qty}</td>
-                                            <td>{item.evening_qty}</td>
+                                            <td>
+                                                {editingRow === index ? (
+                                                    <input
+                                                        type="number"
+                                                        value={editedRowData.morning_qty || ""}
+                                                        onChange={(e) =>
+                                                            setEditedRowData({ ...editedRowData, morning_qty: e.target.value })
+                                                        }
+                                                    />
+                                                ) : (
+                                                    item.morning_qty
+                                                )}
+                                            </td>
+                                            <td>
+                                                {editingRow === index ? (
+                                                    <input
+                                                        type="number"
+                                                        value={editedRowData.evening_qty || ""}
+                                                        onChange={(e) =>
+                                                            setEditedRowData({ ...editedRowData, evening_qty: e.target.value })
+                                                        }
+                                                    />
+                                                ) : (
+                                                    item.evening_qty
+                                                )}
+                                            </td>
+                                            
                                             <td>₹{item.purchased_liter_amount}</td>
                                         </tr>
                                     ))}

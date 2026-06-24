@@ -254,3 +254,48 @@ th {
     padding: 6px 10px;
   }
 }
+.edit-btn {
+  background: #5cb85c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: #a2f7a2;
+}
+
+.save-btn {
+  background: #5cb85c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: #4cae4c;
+}
+
+.cancel-btn {
+  background: #d9534f;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #c9302c;
+}
+.morning-qty,
+.evening-qty {
+  padding: 5px; /* Reduce padding */
+  font-size: 14px; /* Reduce font size */
+  text-align: center; /* Center align the text */
+  width: 80px; /* Set a fixed width */
+}

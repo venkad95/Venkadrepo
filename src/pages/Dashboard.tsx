@@ -13,6 +13,11 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState(); // Replace with dynamic user data if available
   const [timeBasedMessage, setTimeBasedMessage] = useState("");
+  const [showAddRateModal, setShowAddRateModal] = useState(false);
+  const [selectedClientForRate, setSelectedClientForRate] = useState<any>(null);
+  const [productName, setProductName] = useState("");
+const [rate, setRate] = useState("");
+
 
   useEffect(() => {
     fetchClients();
@@ -47,6 +52,34 @@ function Dashboard() {
       setTimeBasedMessage("Good Afternoon");
     } else {
       setTimeBasedMessage("Good Evening");
+    }
+  };
+
+  const handleAddRate = (client: any) => {
+    setSelectedClientForRate(client);
+    setShowAddRateModal(true);
+  };
+  const handleSubmitRate = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    try {
+      const response = await api.post("/product/product-configure-to-user", {
+        userId: selectedClientForRate.uuid,
+        product_name: productName,
+        perliter_rate: rate,
+      });
+  
+      if (response.data.success) {
+        alert("Rate added successfully!");
+        setShowAddRateModal(false);
+        setProductName("");
+        setRate("");
+      } else {
+        alert("Failed to add rate. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error adding rate:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 
@@ -117,6 +150,13 @@ function Dashboard() {
                     >
                       View
                     </button>
+                    <button
+                      className="add-rate-btn"
+                      onClick={() => handleAddRate(client)}
+                    >
+                      Add Rate
+                    </button>
+
                   </td>
                 </tr>
               ))}
@@ -131,6 +171,69 @@ function Dashboard() {
           client={selectedClient}
           onClose={() => setSelectedClient(null)}
         />
+      )}
+      {showAddRateModal && (
+        <div className="modal-overlay">
+          <div className="add-rate-modal">
+            <div className="modal-header">
+              <h2>Add Product Rate</h2>
+              <button
+                className="close-btn"
+                onClick={() => setShowAddRateModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="modal-body">
+              <form onSubmit={handleSubmitRate}>
+                <div className="form-group">
+                  <label htmlFor="user">Select User</label>
+                  <select
+                    id="user"
+                    value={selectedClientForRate?.uuid || ""}
+                    disabled
+                  >
+                    <option value={selectedClientForRate?.uuid}>
+                      {selectedClientForRate?.firstName} {selectedClientForRate?.lastName}
+                    </option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="productName">Product Name</label>
+                  <input
+                    type="text"
+                    id="productName"
+                    value={productName}
+                    onChange={(e) => setProductName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="rate">Rate</label>
+                  <input
+                    type="number"
+                    id="rate"
+                    value={rate}
+                    onChange={(e) => setRate(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={() => setShowAddRateModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="save-btn" onClick={handleSubmitRate}>
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
