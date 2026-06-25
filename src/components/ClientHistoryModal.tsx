@@ -77,7 +77,7 @@ const ClientHistoryModal = ({
           </thead>
 
           <tbody>
-            {productHistory.map((item, index) => (
+            {productHistory && productHistory.map((item, index) => (
               <tr key={index}>
                 <td>{item.month}</td>
                 <td>{item.total_days}</td>
@@ -126,7 +126,7 @@ const ClientHistoryModal = ({
 
                 <tbody>
 
-                  {historyData.map((item: any) => (
+                  {historyData && historyData.map((item: any) => (
                     <tr key={item.id}>
                       <td>{item.buying_date}</td>
                       <td>{item.product_name}</td>
