@@ -14,6 +14,7 @@ import About from "./components/About";
 import Contact from "./components/Contact";
 import GreetingPage from "./pages/GreetingPage";
 import OtpVerify from "./pages/OtpVerify";
+import AuthorizationRole from "./components/authorizationRole";
 
 
 function App() {
@@ -32,8 +33,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/client-dashboard" element={<ClientDashboard/>}/>
+        <Route path="/dashboard" element={<AuthorizationRole allowedRoles ={['owner']}><Dashboard /></AuthorizationRole> } />
+        <Route path="/client-dashboard" element={<AuthorizationRole allowedRoles={['owner','client']}><ClientDashboard/></AuthorizationRole> }/>
       </Routes>
     </Layout>
   </BrowserRouter>

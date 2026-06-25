@@ -95,3 +95,12 @@
       transform: rotate(360deg);
     }
   }
+  .timer {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .timer.expired {
+    color: #d9534f;
+  }
