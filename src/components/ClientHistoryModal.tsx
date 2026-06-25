@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import '../assets/styles/Dashboard.css';
+import '../assets/styles/ClientDashboard.css';
 import api from "../services/api";
 import Loader from "./Loader";
 import moment from "moment";
@@ -57,7 +57,7 @@ const ClientHistoryModal = ({
       console.log(error);
     }
   };
-
+  if(loading) return <Loader/>
   return (
     <div className="modal-overlay">
 

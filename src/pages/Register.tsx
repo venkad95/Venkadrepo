@@ -3,8 +3,11 @@ import AuthCard from "../components/AuthCard";
 import { Link } from "react-router-dom";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import Loader from "../components/Loader";
 
 const Register = () => {
+    const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -20,6 +23,7 @@ const Register = () => {
     });
   };
   const handleRegister = async () => {
+    setLoading(true)
     try {
       if (!formData.firstName) {
         alert("First Name is required");
@@ -36,20 +40,18 @@ const Register = () => {
         return;
       }    
       const response = await api.post("/auth/signup",formData);
+      setLoading(false)
       const userData = response.data;
-      alert(response.data.message);
-      localStorage.setItem("token",response.data.accessToken);
-      localStorage.setItem("user",JSON.stringify(response.data.user));
-      if(userData.role == 'owner'){
-        navigate("/dashboard");
-      }
-      else{
-        navigate("/client-dashboard")
-      }
+      toast.success(response.data.message);
+      // localStorage.setItem("token",userData.data.accessToken);
+      // localStorage.setItem("user",JSON.stringify(userData.data.user));
+        navigate("/otp-verify");
     } catch (error: any) {
-      alert(error.response?.data?.message);
+      setLoading(false)
+      toast.error(error.response?.data?.message);
     }
   };
+  if(loading) return <Loader/>
   return (
     <AuthCard
       title="Create Account"

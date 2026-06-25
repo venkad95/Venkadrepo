@@ -2,6 +2,8 @@ import React from "react";
 import { useState } from "react";
 import "../assets/styles/PurchaseModal.css";
 import api from "../services/api";
+import Loader from "./Loader";
+import { toast } from "react-toastify";
 
 interface PurchaseModalProps {
     onClose: () => void;
@@ -10,6 +12,7 @@ interface PurchaseModalProps {
 
 const PurchaseModal = ({ onClose, onSuccess }: PurchaseModalProps) => {
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         product_name: "",
         buying_date: "",
@@ -27,20 +30,22 @@ const PurchaseModal = ({ onClose, onSuccess }: PurchaseModalProps) => {
     };
 
     const handleSave = async () => {
-        console.log(formData);
+        setLoading(true);
         try {
             setSaving(true);
             const response = await api.post("/product/createproductentry", formData);
-            alert(response.data.message);
+            setLoading(false);
+            toast.success(response.data.message);
             setSaving(false);
             onSuccess(); // refresh dashboard
             onClose();
         } catch (error: any) {
+            setLoading(false);
             setSaving(false);
-            alert(error.response?.data?.message);
+            toast.error(error.response?.data?.message);
         }
     };
-
+    if (loading) return <Loader />
     return (
         <div className="modal-overlay">
             <div className="purchase-modal">
@@ -106,11 +111,10 @@ const PurchaseModal = ({ onClose, onSuccess }: PurchaseModalProps) => {
                     </button>
 
                     <button className="save-btn" disabled={saving} onClick={handleSave}>
-                        Save Purchase
                         {saving ? (
                             <div className="btn-spinner"></div>
                         ) : (
-                            "Save"
+                            "Save Purchase"
                         )}
                     </button>
                 </div>
