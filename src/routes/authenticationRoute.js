@@ -5,6 +5,7 @@ const authMiddel = require('../middelware/authMiddel');
 
 router.post('/login', authController.login);
 router.post('/signup', authController.signup);
+router.post('/verify-otp', authController.otpVerify);
 router.post('/logout', authMiddel.checkaccessToken, authController.logout);
 router.get('/getuserswithdashbaord',authMiddel.checkaccessToken, authController.getOverAllDashboardList);
 
