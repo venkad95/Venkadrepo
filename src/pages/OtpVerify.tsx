@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../assets/styles/OtpVerify.css";
 import api from "../services/api";
 import { toast } from "react-toastify";
@@ -9,6 +9,7 @@ const OtpVerify = () => {
     const [otp, setOtp] = useState("");
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [timer, setTimer] = useState(240); // Timer in seconds (3 minutes)
 
     const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setOtp(e.target.value);
@@ -42,6 +43,26 @@ const OtpVerify = () => {
         }
     };
 
+     // Timer countdown logic
+     useEffect(() => {
+        if (timer > 0) {
+            const countdown = setInterval(() => {
+                setTimer((prevTimer) => prevTimer - 1);
+            }, 1000);
+
+            return () => clearInterval(countdown); // Cleanup interval on unmount
+        }
+    }, [timer]);
+
+    // Format timer as MM:SS
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+        return `${minutes.toString().padStart(2, "0")}:${seconds
+            .toString()
+            .padStart(2, "0")}`;
+    };
+
     return (
         <div className="otp-verify-container">
             <div className="otp-verify-box">
@@ -66,6 +87,11 @@ const OtpVerify = () => {
                 >
                     {loading ? <span className="btn-spinner"></span> : "Verify OTP"}
                 </button>
+                <p className="timer">
+                    {timer > 0
+                        ? `Time remaining: ${formatTime(timer)}`
+                        : "OTP expired. Please request a new OTP."}
+                </p>
             </div>
         </div>
     );
