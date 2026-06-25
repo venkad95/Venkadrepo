@@ -1,24 +1,20 @@
-const nodemailer = require("nodemailer");
-
-// Create a transporter using SMTP
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: 'smtp-relay.brevo.com',
   port: 587,
-  secure: false, // use STARTTLS (upgrade connection to TLS after connecting)
   auth: {
-    user: process.env.SMTP_USER || 'imvenkadesan@gmail.com',
-    pass: process.env.SMTP_PASS || 'wdey vpbz tymc eywu'
+    user: process.env.BREVO_SMTP_USER,  // your Brevo account email
+    pass: process.env.BREVO_API_KEY_PASS,  // SMTP key from Brevo dashboard
   },
 });
 
-const sendEmail = async(email, otp) =>{
+export const sendEmail = async (email, otp) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Admin Team" <${process.env.SMTP_USER}>`, // sender address
-      to: email, // list of recipients
-      subject: "Your OTP Code", // subject line
-      text: `Your OTP code is: ${otp}`, // plain text body
+      from: `"Admin Team" <${process.env.BREVO_FROM_EMAIL}>`,
+      to: email,
+      subject: 'Your OTP Code',
       html: `
         <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; max-width: 400px; margin: auto;">
           <h2 style="color: #333;">Your OTP Code</h2>
@@ -27,14 +23,12 @@ const sendEmail = async(email, otp) =>{
           <p style="font-size: 14px; color: #777;">This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
           <p style="font-size: 12px; color: #aaa;">If you did not request this, please ignore this email.</p>
         </div>
-      `, // HTML body
+      `,
     });
-  
-    console.log("Message sent: %s", info.messageId);
-    // Preview URL is only available when using an Ethereal test account
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-  } catch (err) {
-    console.error("Error while sending mail:", err);
+    console.log('Email sent:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Email error:', error);
+    return error.message;
   }
-}
-exports.sendEmail = sendEmail;
+};
