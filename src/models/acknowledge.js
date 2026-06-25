@@ -21,10 +21,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true
         },
-        // otpExpiresAt: {
-        //     type: DataTypes.DATE,
-        //     allowNull: false
-        //   },
+        otpExpiresAt: {
+            type: DataTypes.DATE,
+            allowNull: false
+        },
         acknowledge_type: {
             type: DataTypes.STRING,
             allowNull: true

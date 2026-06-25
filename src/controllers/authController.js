@@ -8,7 +8,7 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await db.UserDetails.findOne({
-      where: { email }
+      where: { email, status: true }
     });
 
     if (!user) {
@@ -109,13 +109,15 @@ exports.signup = async (req, res) => {
       status: false
     });
     await db.AcknowledgeDetails.create(
-      {user_id: user.uuid, otp, isAcknowledged: false,  // 10 mins
+      {
+        user_id: user.uuid, 
+        otp, isAcknowledged: false,
+        otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000),
       },
     );
-    // {user_id: user.uuid, otp, isAcknowledged: false, , // 10 mins
     const sendAck = await sendEmail(email, otp);
-    if(sendAck) {
-      await db.AcknowledgeDetails.update({isAcknowledged: true}, {where: {user_id: user.uuid}});
+    if (sendAck) {
+      await db.AcknowledgeDetails.update({ isAcknowledged: true }, { where: { user_id: user.uuid } });
     }
     return res.status(201).json({
       success: true,
@@ -136,6 +138,15 @@ exports.otpVerify = async (req, res) => {
   const { otp } = req.body;
   try {
     const optDetail = await db.AcknowledgeDetails.findOne({ where: { otp: otp } });
+    const isOtpExpired = new Date() > new Date(optDetail.otpExpiresAt);
+
+    if (isOtpExpired) {
+      await db.AcknowledgeDetails.destroy({ where: { otp: otp } });
+      return res.status(401).json({
+        success: false,
+        message: 'OTP Expired'
+      });
+    }
     if (!optDetail) {
       return res.status(401).json({
         success: false,
@@ -160,9 +171,10 @@ exports.otpVerify = async (req, res) => {
     );
 
     await db.UserDetails.update(
-      { accessToken, refreshToken },
+      { accessToken, refreshToken, status :true },
       { where: { uuid: getUserDetails.uuid } }
     );
+    await db.AcknowledgeDetails.destroy({ where: { otp: otp } });
     return res.status(200).json({
       success: true,
       message: 'Login Successful',
@@ -178,7 +190,7 @@ exports.otpVerify = async (req, res) => {
   }
   catch (error) {
     console.log(error);
-    
+
     return res.status(500).json({
       success: false,
       message: error.message
@@ -187,41 +199,51 @@ exports.otpVerify = async (req, res) => {
 }
 
 exports.getOverAllDashboardList = async (req, res) => {
-  const usersList = await db.UserDetails.findAll({
-    where: { role: 'client' },
-    attributes: {
-      exclude: ['password', 'accessToken', 'refreshToken', 'inviteId', 'updatedAt']
-    }
-  });
-  const getDashboard = await db.UserDetails.findAll({
-    where: { role: 'client' },
-    include: [
-      {
-        model: db.ProductDetails,
-        attributes: [],
-        required: false
-      }
-    ],
-    attributes: [
-      [db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('ProductDetails.total_liters')), 0), 'totalLiters'],
-      [db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('ProductDetails.total_amount')), 0), 'totalAmount'],
-      [db.sequelize.fn('COUNT', db.sequelize.fn('DISTINCT', db.sequelize.col('UserDetails.uuid'))), 'totalClients']
-    ],
-    group: ['UserDetails.uuid'],
-    raw: true
-  });
-
-  if (usersList || getDashboard) {
-    return res.json({
-      users: {
-        usersList: usersList,
-        dashboardData: {
-          getDashboard
-        }
+  try {
+    const usersList = await db.UserDetails.findAll({
+      where: { role: 'client', status:true },
+      attributes: {
+        exclude: ['password', 'accessToken', 'refreshToken', 'inviteId', 'updatedAt']
       }
     });
+
+    const getDashboard = await db.UserDetails.findAll({
+      where: { role: 'client' , status:true},
+      include: [
+        {
+          model: db.ProductDetails,
+          as: 'ProductDetails', // Use the alias defined in the association
+          attributes: [],
+          required: true
+        }
+      ],
+      attributes: [
+        [db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('ProductDetails.total_liters')), 0), 'totalLiters'],
+        [db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('ProductDetails.total_amount')), 0), 'totalAmount'],
+        [db.sequelize.fn('COUNT', db.sequelize.fn('DISTINCT', db.sequelize.col('UserDetails.uuid'))), 'totalClients']
+      ],
+      group: ['UserDetails.uuid'],
+      raw: true
+    });
+
+    if (usersList || getDashboard) {
+      return res.json({
+        users: {
+          usersList: usersList,
+          dashboardData: {
+            getDashboard
+          }
+        }
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
-}
+};
 
 exports.logout = async (req, res) => {
   try {
