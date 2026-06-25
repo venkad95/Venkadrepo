@@ -3,8 +3,11 @@ import AuthCard from "../components/AuthCard";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import api from '../services/api';
+import { toast } from "react-toastify";
+import Loader from "../components/Loader";
 
 const Login = () =>{
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -20,11 +23,14 @@ const Login = () =>{
   };
 
   const handleLogin = async () => {
+    setLoading(true)
     try {
       const response = await api.post("/auth/login", formData);
+      setLoading(false)
       const userData = response.data.user;
       localStorage.setItem("token",response.data.accessToken);
       localStorage.setItem("user",JSON.stringify(response.data.user));
+      toast.success("Login successfully");
       if(userData.role == 'owner'){
         navigate("/dashboard");
       }
@@ -33,16 +39,19 @@ const Login = () =>{
       }
 
     } catch (error: any) {
-      alert(
-        error.response?.data?.message ||
-        "Login failed"
-      );
+      setLoading(false)
+      toast.error(error.response?.data?.message);
+      // alert(
+      //   error.response?.data?.message ||
+      //   "Login failed"
+      // );
 
     }
   };
+  if (loading) return <Loader />;
   return (
     <AuthCard
-      title="Welcome Back"
+      title="Welcome"
       subtitle="Sign in to continue"
     >
       <input
