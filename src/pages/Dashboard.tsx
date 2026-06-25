@@ -98,17 +98,17 @@ const [rate, setRate] = useState("");
         <div className="summary-cards">
           <div className="card">
             <h3>Total Clients</h3>
-            <span>{adminDashboard.totalClients}</span>
+            <span>{adminDashboard?.totalClients}</span>
           </div>
 
           <div className="card">
             <h3>Total Liters</h3>
-            <span>{adminDashboard.totalLiters}</span>
+            <span>{adminDashboard?.totalLiters}</span>
           </div>
 
           <div className="card">
             <h3>Total Amount</h3>
-            <span>{adminDashboard.totalAmount}</span>
+            <span>{adminDashboard?.totalAmount}</span>
           </div>
 
           <div className="card">
