@@ -9,5 +9,8 @@ router.post('/signup', authController.signup);
 router.post('/verify-otp', authController.otpVerify);
 router.post('/logout', authMiddel.checkaccessToken, authController.logout);
 router.get('/getuserswithdashbaord',authMiddel.checkaccessToken, authorize('owner'), authController.getOverAllDashboardList);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
+
 
 module.exports = router;

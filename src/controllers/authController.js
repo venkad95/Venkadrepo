@@ -1,7 +1,7 @@
 const db = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { sendEmail } = require('../commonServices/emailService');
+const { emailVerificationSent, forgotPasswordEmail } = require('../commonServices/emailService');
 
 exports.login = async (req, res) => {
   try {
@@ -115,7 +115,7 @@ exports.signup = async (req, res) => {
         otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000),
       },
     );
-    const sendAck = await sendEmail(email, otp);
+    const sendAck = await emailVerificationSent(email, otp);
     if (sendAck) {
       await db.AcknowledgeDetails.update({ isAcknowledged: true }, { where: { user_id: user.uuid } });
     }
@@ -264,3 +264,94 @@ exports.logout = async (req, res) => {
     });
   }
 }
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Check if the user exists
+    const user = await db.UserDetails.findOne({ where: { email, status:true } });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User with this email does not exist',
+      });
+    }
+
+    // Generate a reset token
+    const resetToken = jwt.sign(
+      { userId: user.uuid },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' } // Token expires in 1 hour
+    );
+
+    // Save the reset token in the database (optional)
+    await db.AcknowledgeDetails.create({
+      user_id: user.uuid,
+      otp: resetToken,
+      acknowledge_type: 'reset_password',
+      otpExpiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour expiry
+      isAcknowledged: false,
+    });
+
+    // Send the reset password email
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    await forgotPasswordEmail(user,resetLink);
+    return res.status(200).json({
+      success: true,
+      message: 'Reset password link sent to your email',
+    });
+  } catch (error) {
+    console.error('Error in forgotPassword:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while processing your request',
+    });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+
+  // Validate input
+  if (!token || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Token and new password are required',
+    });
+  }
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Find the user by the token's payload
+    const user = await db.UserDetails.findOne({ where: { uuid: decoded.userId } });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Invalid or expired token',
+      });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update the user's password
+    await user.update({ password: hashedPassword });
+
+    // Optionally, delete the reset token from the database
+    await db.AcknowledgeDetails.destroy({ where: { user_id: user.uuid, otp: token } });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successfully',
+    });
+  } catch (error) {
+    console.error('Error in resetPassword:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while resetting your password',
+    });
+  }
+};
