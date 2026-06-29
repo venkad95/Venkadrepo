@@ -19,6 +19,7 @@ const ClientHistoryModal = ({
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [historyData, setHistoryData] = useState([]);
+  const [clientDashboard, setClientDashboard] = useState<any>({});
   useEffect(() => {
     fetchProductHistory();
   }, []);
@@ -26,7 +27,7 @@ const ClientHistoryModal = ({
     setLoading(true);
     try {
       const res = await api.get(`/product/client-summary?userid=${client.uuid}`);
-      setProductHistory(res.data)
+      setProductHistory(res.data.users.usersList || []);
       setLoading(false);
     }
     catch (error) {
@@ -77,7 +78,7 @@ const ClientHistoryModal = ({
           </thead>
 
           <tbody>
-            {productHistory && productHistory.map((item, index) => (
+            {productHistory && productHistory?.map((item, index) => (
               <tr key={index}>
                 <td>{item.month}</td>
                 <td>{item.total_days}</td>

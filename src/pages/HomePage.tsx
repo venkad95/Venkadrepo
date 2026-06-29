@@ -1,9 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../assets/styles/Home.css";
+import api from "../services/api";
 
-function HeroSection() {
+const HeroSection = () => {
   const navigate = useNavigate();
+  const [adminDashboard, setAdminDashboard] = useState<any>({});
+  const [loading, setLoading] = useState(false);
+
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/auth/getuserswithdashbaord");
+      // adjust based on your backend structure
+      setAdminDashboard(res.data.users.dashboardData.getDashboard[0]);
+
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <>
@@ -51,13 +73,13 @@ function HeroSection() {
 
       <section className="stats-section">
         <div className="stat-card">
-          <h2>500+</h2>
+          <h2>{adminDashboard?.totalClients}</h2>
           <p>Happy Customers</p>
         </div>
 
         <div className="stat-card">
-          <h2>1500+</h2>
-          <p>Liters Delivered Daily</p>
+          <h2>{adminDashboard?.totalLiters}</h2>
+          <p>Total Delivered Liters</p>
         </div>
 
         <div className="stat-card">
