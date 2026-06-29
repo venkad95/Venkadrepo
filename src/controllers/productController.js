@@ -11,6 +11,13 @@ exports.createProductEntry = async (req, res) => {
         if (req.user) {
             req.body.userId = req.user.userId;
         }
+        const checkProductRate = await db.ProductMaster.findOne({ where: { user_id: req.body.userId } });
+        if(!checkProductRate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please contact admin and configure product rate first'
+            });
+        }
         const entryDetails = await db.ProductDetails.create({
             user_id: req.body.userId,
             product_name,
@@ -18,8 +25,8 @@ exports.createProductEntry = async (req, res) => {
             evening_qty: sanitizedEveningQty,
             buying_date,
             total_liters: totalLiters,
-            purchased_liter_amount: totalLiters * 40,
-            perliter_rate: null
+            purchased_liter_amount: totalLiters * checkProductRate.perliter_rate,
+            perliter_rate: checkProductRate.perliter_rate || null
         })
         if (entryDetails) {
             return res.status(201).json({
@@ -42,7 +49,8 @@ exports.productRateConfigureToUser = async (req, res) => {
             product_name,
             perliter_rate
         })
-        await db.ProductDetails.update({perliter_rate : perliter_rate}, {where: {uuid: userId}});
+        // const existOrder = await db.ProductDetails.findOne({ where: { user_id: userId } });        
+        // await db.ProductDetails.update({perliter_rate : perliter_rate,purchased_liter_amount: existOrder?.total_liters * perliter_rate.perliter_rate,}, {where: {user_id: userId}});
         if (entryDetails) {
             return res.status(201).json({
                 success: true,
