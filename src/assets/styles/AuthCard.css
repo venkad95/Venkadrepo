@@ -101,3 +101,39 @@
     margin-bottom: 15px;
   }
 }
+.password-validation {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+.password-validation p {
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.password-validation .valid {
+  color: #28a745; /* Green for valid */
+}
+
+.password-validation .invalid {
+  color: #dc3545; /* Red for invalid */
+}
+
+.password-validation p::before {
+  margin-right: 8px;
+  font-size: 16px;
+  color: #28a745; /* Green tick */
+  display: none; /* Hide by default */
+}
+
+.password-validation .invalid::before {
+  color: #dc3545; /* Red cross */
+  display: inline-block;
+}
+
+.password-validation .valid::before {
+  display: inline-block; /* Show tick for valid */
+}
