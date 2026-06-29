@@ -5,6 +5,7 @@ import React from "react";
 import api from "../services/api.tsx";
 import moment from "moment";
 import Loader from "../components/Loader.tsx";
+import { toast } from "react-toastify";
 
 function Dashboard() {
   const [selectedClient, setSelectedClient] = useState<any>(null);
@@ -70,16 +71,16 @@ const [rate, setRate] = useState("");
       });
   
       if (response.data.success) {
-        alert("Rate added successfully!");
+        toast.success("Rate added successfully!");
         setShowAddRateModal(false);
         setProductName("");
         setRate("");
       } else {
-        alert("Failed to add rate. Please try again.");
+        toast.error("Failed to add rate. Please try again.");
       }
     } catch (error) {
       console.error("Error adding rate:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     }
   };
 
@@ -173,6 +174,7 @@ const [rate, setRate] = useState("");
         />
       )}
       {showAddRateModal && (
+
         <div className="modal-overlay">
           <div className="add-rate-modal">
             <div className="modal-header">
