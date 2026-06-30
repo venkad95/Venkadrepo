@@ -121,7 +121,7 @@ exports.signup = async (req, res) => {
     }
     return res.status(201).json({
       success: true,
-      message: 'Otp sent your registered email!!',
+      message: 'Otp sent your registered email, kindly check you spam folder!!',
     });
 
   } catch (error) {
