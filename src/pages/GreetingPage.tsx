@@ -1,62 +1,56 @@
 import React from "react";
-import { Line } from "react-chartjs-2";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-} from "chart.js";
+import { useNavigate } from "react-router-dom";
 import "../assets/styles/GreetingPage.css";
 
-// Register the required components
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
-
 const GreetingPage = () => {
-    const userName = "Kumar"; // Replace with dynamic user data if available
-    const currentHour = new Date().getHours();
-    let timeBasedMessage = "";
+  const navigate = useNavigate();
 
-    if (currentHour < 12) {
-        timeBasedMessage = "Good morning";
-    } else if (currentHour < 18) {
-        timeBasedMessage = "Good afternoon";
-    } else {
-        timeBasedMessage = "Good evening";
-    }
+  // Get the current hour to display dynamic greetings
+  const currentHour = new Date().getHours();
+  const getGreeting = () => {
+    if (currentHour < 12) return "Good Morning";
+    if (currentHour < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
 
-    const data = {
-        labels: ["January", "February", "March", "April", "May", "June"],
-        datasets: [
-            {
-                label: "Monthly Sales",
-                data: [65, 59, 80, 81, 56, 55],
-                fill: false,
-                backgroundColor: "rgba(75,192,192,0.4)",
-                borderColor: "rgba(75,192,192,1)",
-            },
-        ],
-    };
+  // Get the user's first name from localStorage or API
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const firstName = user.firstName || "Guest";
 
-    return (
-        <div className="greeting-page">
-            <h1>{timeBasedMessage}, {userName}!</h1>
-            <div className="graph-container">
-                <Line data={data} />
-            </div>
+  return (
+    <div className="greeting-page">
+      <div className="greeting-container">
+        <h1 className="greeting">
+          {getGreeting()}, <span className="user-name">Dear {firstName}</span>!
+        </h1>
+        <p className="subtitle">
+          Start your day with the goodness of fresh cow milk. It's healthy, nutritious, and perfect for your family.
+        </p>
+        <div className="image-container">
+          <img
+            src="https://example.com/cow-milk-image.jpg" // Replace with your image URL
+            alt="Cow Milk"
+            className="cow-milk-image"
+          />
         </div>
-    );
+        <div className="advantages">
+          <h2>Why Choose Cow Milk?</h2>
+          <ul>
+            <li>Rich in calcium for strong bones and teeth.</li>
+            <li>Boosts immunity with essential vitamins.</li>
+            <li>Great source of protein for muscle growth.</li>
+            <li>100% natural and fresh.</li>
+          </ul>
+        </div>
+        <button
+          className="add-product-btn"
+          onClick={() => navigate("/add-product")}
+        >
+          Enter Today's Milk Purchase
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default GreetingPage;

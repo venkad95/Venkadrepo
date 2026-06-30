@@ -19,7 +19,10 @@ const ClientHistoryModal = ({
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [historyData, setHistoryData] = useState([]);
-  const [clientDashboard, setClientDashboard] = useState<any>({});
+  const [totalPages, setTotalPages] = useState(1); // Total pages from the server  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5); // Number of items per page
+
   useEffect(() => {
     fetchProductHistory();
   }, []);
@@ -36,7 +39,7 @@ const ClientHistoryModal = ({
     }
   }
 
-  const handleView = async (month: string) => {
+  const handleView = async (month: string, page = 1) => {
     setSelectedMonth(month);
     setShowHistoryModal(true);
     const formattedMonth = moment(
@@ -46,11 +49,15 @@ const ClientHistoryModal = ({
     try {
 
       const response = await api.get(
-        `/product/client-history/${formattedMonth}?userid=${client.uuid}`
+        `/product/client-history/${formattedMonth}?userid=${client.uuid}&page=${page}&limit=${itemsPerPage}`
       );
 
-      setHistoryData(response.data);
+      setHistoryData(response.data.data);
       setSelectedMonth(month);
+      // setHistoryData(response.data.history); // Update table data
+      setTotalPages(response.data.totalPages); // Update total pages from the server
+      setCurrentPage(page);
+      setCurrentPage(response.data.currentPage);
 
       setShowHistoryModal(true);
 
@@ -58,7 +65,7 @@ const ClientHistoryModal = ({
       console.log(error);
     }
   };
-  if(loading) return <Loader/>
+  if (loading) return <Loader />
   return (
     <div className="modal-overlay">
 
@@ -85,11 +92,12 @@ const ClientHistoryModal = ({
                 <td>{item.product_name}</td>
                 <td>{item.total_liters}</td>
                 <td>₹{item.amount}</td>
-                <td><button className="view-btn" onClick={() => handleView(item.month)}>View</button></td>
+                <td><button className="view-btn" onClick={() => handleView(item.month, 1)}>View</button></td>
               </tr>
             ))}
           </tbody>
         </table>
+        
         <button className="cancel-btn" onClick={onClose}>
           Close
         </button>
@@ -139,7 +147,25 @@ const ClientHistoryModal = ({
 
                 </tbody>
               </table>
-
+              <div className="pagination">
+          <button
+            onClick={() => handleView(selectedMonth, Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              handleView(selectedMonth, Math.min(currentPage + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
             </div>
 
           </div>
