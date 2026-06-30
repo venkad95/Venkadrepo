@@ -18,6 +18,22 @@ exports.createProductEntry = async (req, res) => {
                 message: 'Please contact admin and configure product rate first'
             });
         }
+
+        // Check if an entry already exists for the same date
+        const existingEntry = await db.ProductDetails.findOne({
+            where: {
+                user_id: req.body.userId,
+                buying_date: new Date(buying_date) // Ensure the date matches
+            }
+        });
+
+        if (existingEntry) {
+            return res.status(400).json({
+                success: false,
+                message: 'An entry for this date already exists. Please update the existing entry or choose a different date.'
+            });
+        }
+
         const entryDetails = await db.ProductDetails.create({
             user_id: req.body.userId,
             product_name,
@@ -179,12 +195,28 @@ exports.getProductDetails = async (req, res) => {
 }
 
 exports.getMonthHistory = async (req, res) => {
+    console.log(req.query);
+    
     const { month } = req.params;
+    const { page = 1, limit = 10 } = req.query; // Default page = 1, limit = 10
     const startDate = new Date(`${month}-01`);
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + 1);
 
     try {
+        const offset = (page - 1) * limit;
+        const totaData = await db.ProductDetails.findAll({
+            attributes: ['uuid'],
+            where: {
+                [Op.and]: [{
+                    buying_date: {
+                        [Op.gte]: startDate,
+                        [Op.lt]: endDate
+                    }
+                },
+                { user_id: req.query.userid ? req.query.userid : req.user.userId }]
+            },
+        });
         const data = await db.ProductDetails.findAll({
             attributes: ['uuid', 'user_id', 'product_name', 'morning_qty', 'evening_qty', 'buying_date', 'updatedAt', 'purchased_liter_amount'],
             where: {
@@ -197,11 +229,21 @@ exports.getMonthHistory = async (req, res) => {
                 { user_id: req.query.userid ? req.query.userid : req.user.userId }]
             },
             order: [
-                ["buying_date", "DESC"]
-            ]
+                ["buying_date", "DESC"]],
+                limit: parseInt(limit), // Number of records per page
+                offset: parseInt(offset)
+            
         });
 
-        return res.json(data);
+        // return res.json(data);
+
+        return res.json({
+            success: true,
+            currentPage: parseInt(page),
+            totalPages: Math.ceil(totaData.length / limit),
+            totalRecords: totaData.count,
+            data: data
+        });
     }
     catch (err) {
         console.log(err);
