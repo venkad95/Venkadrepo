@@ -59,6 +59,7 @@ exports.createProductEntry = async (req, res) => {
                 product_name,
                 perliter_rate: checkProductRate.perliter_rate || null,
                 from_date: buying_date,
+                to_date: buying_date,
                 total_liter: totalLiters,
                 total_amount: totalLiters * checkProductRate.perliter_rate,
                 advance_payment: 0,
@@ -123,6 +124,13 @@ exports.updateProductQuantities = async (req, res) => {
                 message: 'Product entry not found'
             });
         }
+        const checkProductRate = await db.ProductMaster.findOne({ where: { user_id: findRecod.user_id } });
+        if (!checkProductRate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please contact admin and configure product rate first'
+            });
+        }
 
         // Update only provided fields and recalculate totals
         const updatedMorningQty = morning_qty !== undefined && morning_qty !== null && morning_qty.toString().trim() !== '' ? Number(morning_qty) : findRecod.morning_qty;
@@ -133,13 +141,29 @@ exports.updateProductQuantities = async (req, res) => {
                 morning_qty: updatedMorningQty,
                 evening_qty: updatedEveningQty,
                 total_liters: newTotalLiters,
-                purchased_liter_amount: newTotalLiters * 40 // Assuming 40 is the rate per liter
+                purchased_liter_amount: newTotalLiters * checkProductRate.perliter_rate// Assuming 40 is the rate per liter
             },
             {
                 where: { uuid }
             }
         );
-
+        const existingPayment = await db.Payments.findOne({
+            where: {
+                user_id: findRecod.user_id,
+                from_date: {
+                    [Op.gte]: new Date(new Date(findRecod.buying_date).getFullYear(), new Date(findRecod.buying_date).getMonth(), 1), // Start of the month
+                    [Op.lt]: new Date(new Date(findRecod.buying_date).getFullYear(), new Date(findRecod.buying_date).getMonth() + 1, 1) // Start of the next month
+                }
+            }
+        });
+        
+        await db.Payments.update({
+            to_date: findRecod.buying_date,
+            total_liter: existingPayment.total_liter + newTotalLiters,
+            total_amount: existingPayment.total_amount + (newTotalLiters * checkProductRate.perliter_rate),
+        }, {
+            where: { uuid: existingPayment.uuid }
+        });
         if (updated) {
             return res.status(200).json({
                 success: true,

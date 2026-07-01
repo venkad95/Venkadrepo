@@ -12,7 +12,6 @@ exports.getPaymentDetails = async (req, res) => {
                 message: 'Please provide both from_date and to_date in the query parameters.'
             });
         }
-
         const paymentDetails = await db.Payments.findOne({
             where: {
                 user_id: userId,
