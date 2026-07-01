@@ -53,6 +53,11 @@ module.exports = (sequelize, DataTypes) => {
             as: 'ProductMaster', // Alias for ProductMaster
             onDelete: 'CASCADE'
         });
+        UserDetails.hasMany(models.Payments, {
+            foreignKey: 'user_id',
+            as: 'Payments', // Alias for Payments
+            onDelete: 'CASCADE'
+        })
     };
 
     return UserDetails;

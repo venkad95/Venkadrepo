@@ -12,7 +12,7 @@ exports.createProductEntry = async (req, res) => {
             req.body.userId = req.user.userId;
         }
         const checkProductRate = await db.ProductMaster.findOne({ where: { user_id: req.body.userId } });
-        if(!checkProductRate) {
+        if (!checkProductRate) {
             return res.status(400).json({
                 success: false,
                 message: 'Please contact admin and configure product rate first'
@@ -44,6 +44,38 @@ exports.createProductEntry = async (req, res) => {
             purchased_liter_amount: totalLiters * checkProductRate.perliter_rate,
             perliter_rate: checkProductRate.perliter_rate || null
         })
+        const existingPayment = await db.Payments.findOne({
+            where: {
+                user_id: req.body.userId,
+                from_date: {
+                    [Op.gte]: new Date(new Date(buying_date).getFullYear(), new Date(buying_date).getMonth(), 1), // Start of the month
+                    [Op.lt]: new Date(new Date(buying_date).getFullYear(), new Date(buying_date).getMonth() + 1, 1) // Start of the next month
+                }
+            }
+        });
+        if (!existingPayment) {
+            await db.Payments.create({
+                user_id: req.body.userId,
+                product_name,
+                perliter_rate: checkProductRate.perliter_rate || null,
+                from_date: buying_date,
+                total_liter: totalLiters,
+                total_amount: totalLiters * checkProductRate.perliter_rate,
+                advance_payment: 0,
+                partial_payment: 0,
+                full_payment: 0,
+                payment_status: 'pending'
+            })
+        }
+        else{
+            await db.Payments.update({
+                to_date: buying_date,
+                total_liter: existingPayment.total_liter + totalLiters,
+                total_amount: existingPayment.total_amount + (totalLiters * checkProductRate.perliter_rate),
+            }, {
+                where: { uuid: existingPayment.uuid }
+            });
+        }
         if (entryDetails) {
             return res.status(201).json({
                 success: true,
@@ -95,7 +127,7 @@ exports.updateProductQuantities = async (req, res) => {
         // Update only provided fields and recalculate totals
         const updatedMorningQty = morning_qty !== undefined && morning_qty !== null && morning_qty.toString().trim() !== '' ? Number(morning_qty) : findRecod.morning_qty;
         const updatedEveningQty = evening_qty !== undefined && evening_qty !== null && evening_qty.toString().trim() !== '' ? Number(evening_qty) : findRecod.evening_qty;
-        const newTotalLiters = updatedMorningQty + updatedEveningQty;     
+        const newTotalLiters = updatedMorningQty + updatedEveningQty;
         const [updated] = await db.ProductDetails.update(
             {
                 morning_qty: updatedMorningQty,
@@ -133,60 +165,62 @@ exports.getProductDetails = async (req, res) => {
         const data = await db.ProductDetails.findAll({
             where: { user_id: req.query.userid ? req.query.userid : req.user.userId },
             attributes: [
-            'product_name',
-            [
-                db.sequelize.fn(
-                "TO_CHAR",
-                db.sequelize.col("buying_date"),
-                "Mon-YYYY"
-                ),
-                "month"
-            ],
-            [
-                db.sequelize.fn(
-                "SUM",
-                db.sequelize.col("total_liters")
-                ),
-                "total_liters"
-            ],
-            [db.sequelize.fn("SUM", db.sequelize.col("purchased_liter_amount")), "amount"],
-            [
-                db.sequelize.fn(
-                "COUNT",
-                db.sequelize.col("uuid")
-                ),
-                "total_days"
-            ]
+                'product_name',
+                [
+                    db.sequelize.fn(
+                        "TO_CHAR",
+                        db.sequelize.col("buying_date"),
+                        "Mon-YYYY"
+                    ),
+                    "month"
+                ],
+                [
+                    db.sequelize.fn(
+                        "SUM",
+                        db.sequelize.col("total_liters")
+                    ),
+                    "total_liters"
+                ],
+                [db.sequelize.fn("SUM", db.sequelize.col("purchased_liter_amount")), "amount"],
+                [
+                    db.sequelize.fn(
+                        "COUNT",
+                        db.sequelize.col("uuid")
+                    ),
+                    "total_days"
+                ]
             ],
             group: [
-            "product_name",
-            db.sequelize.fn(
-                "TO_CHAR",
-                db.sequelize.col("buying_date"),
-                "Mon-YYYY"
-            )
+                "product_name",
+                db.sequelize.fn(
+                    "TO_CHAR",
+                    db.sequelize.col("buying_date"),
+                    "Mon-YYYY"
+                )
             ],
             order: [
-            [db.sequelize.literal('"month"'), "DESC"]
+                [db.sequelize.literal('"month"'), "DESC"]
             ]
         });
 
         const dashboard = await db.ProductDetails.findAll({
             where: { user_id: req.query.userid ? req.query.userid : req.user.userId },
             attributes: [
-            [db.sequelize.fn("COUNT", db.sequelize.col("uuid")), "total_days"],
-            [db.sequelize.fn("SUM", db.sequelize.col("purchased_liter_amount")), "total_amount"],
-            [db.sequelize.fn("SUM", db.sequelize.col("total_liters")), "total_liters"]
+                [db.sequelize.fn("COUNT", db.sequelize.col("uuid")), "total_days"],
+                [db.sequelize.fn("SUM", db.sequelize.col("purchased_liter_amount")), "total_amount"],
+                [db.sequelize.fn("SUM", db.sequelize.col("total_liters")), "total_liters"]
             ],
             raw: true
         });
-        
-        return res.json({users: {
-            usersList: data,
-            dashboardData: {
-                dashboard
+
+        return res.json({
+            users: {
+                usersList: data,
+                dashboardData: {
+                    dashboard
+                }
             }
-          }});
+        });
     }
     catch (err) {
         console.log(err);
@@ -196,7 +230,7 @@ exports.getProductDetails = async (req, res) => {
 
 exports.getMonthHistory = async (req, res) => {
     console.log(req.query);
-    
+
     const { month } = req.params;
     const { page = 1, limit = 10 } = req.query; // Default page = 1, limit = 10
     const startDate = new Date(`${month}-01`);
@@ -230,9 +264,9 @@ exports.getMonthHistory = async (req, res) => {
             },
             order: [
                 ["buying_date", "DESC"]],
-                limit: parseInt(limit), // Number of records per page
-                offset: parseInt(offset)
-            
+            limit: parseInt(limit), // Number of records per page
+            offset: parseInt(offset)
+
         });
 
         // return res.json(data);

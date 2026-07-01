@@ -5,6 +5,7 @@ const { sequelize } = require('./src/models');
 
 const userRoutes = require('./src/routes/authenticationRoute');
 const productRoutes = require('./src/routes/productDetailsRoute');
+const paymentRoutes = require('./src/routes/paymentRoute');
 
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(express.json());
 /** ROUTES */
 app.use('/api/auth', userRoutes);
 app.use('/api/product', productRoutes);
+app.use('/api/payment', paymentRoutes);
 
 /** HEALTH CHECK */
 app.get('/', (req, res) => {
