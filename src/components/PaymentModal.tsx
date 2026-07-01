@@ -1,37 +1,61 @@
 import React, { useState, useEffect } from "react";
 import "../assets/styles/PaymentModal.css";
 import { toast } from "react-toastify";
+import api from "../services/api";
 
 interface PaymentModalProps {
   onClose: () => void;
-  totalMilk: number;
-  totalDays: number;
-  unpaidDays: number;
-  totalAmount: number;
-  advanceAmount: number;
-  onSubmit: (paymentData: { amount: number; isPartial: boolean }) => void;
+  onSubmit: (paymentDetails: { amount: number; isPartial: boolean }) => void;
+  selectedMonth: string;
 }
 
-const PaymentModal = ({
-  onClose,
-  totalMilk,
-  totalDays,
-  unpaidDays,
-  totalAmount,
-  advanceAmount,
-  onSubmit,
-}: PaymentModalProps) => {
+const PaymentModal = ({ onClose, onSubmit, selectedMonth}: PaymentModalProps) => {
+  
   const [isPartialPayment, setIsPartialPayment] = useState(false);
   const [isFinalPayment, setIsFinalPayment] = useState(false);
   const [partialAmount, setPartialAmount] = useState(0);
-  const [finalAmount, setFinalAmount] = useState(totalAmount - advanceAmount);
+  const [finalAmount, setFinalAmount] = useState(0);
+  const [totalMilk, setTotalMilk] = useState(0);
+  const [totalDays, setTotalDays] = useState(0);
+  const [unpaidDays, setUnpaidDays] = useState(0); 
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [advanceAmount, setAdvanceAmount] = useState(0);
 
   useEffect(() => {
-    // Recalculate the final amount when advance or partial payment changes
-    if (!isPartialPayment) {
-      setFinalAmount(totalAmount - advanceAmount);
+    getPaymentDetails(selectedMonth);
+  }, [selectedMonth]);
+
+  const getPaymentDetails = async (selectedMonth) => {
+    try{
+      // Calculate from_date (start of the month) and to_date (end of the month)
+        const fromDate = new Date(selectedMonth);
+        fromDate.setDate(1); // Set to the first day of the month
+        const toDate = new Date(fromDate);
+        toDate.setMonth(toDate.getMonth() + 1); // Move to the next month
+        toDate.setDate(0); // Set to the last day of the current month
+
+        // Format dates as YYYY-MM-DD
+        const from_date = fromDate.toISOString().split("T")[0];
+        const to_date = toDate.toISOString().split("T")[0];
+
+        const response = await api.get(
+          `/payment/get-payment-details?from_date=${from_date}&to_date=${to_date}`
+        );
+        const paymentDetails = response.data.data;
+        console.log(paymentDetails);
+        
+        setTotalMilk(paymentDetails.total_liter);
+        setTotalDays(paymentDetails.totalDays);
+        setUnpaidDays(paymentDetails.unpaidDays);
+        setTotalAmount(paymentDetails.total_amount);
+        setAdvanceAmount(paymentDetails.advance_payment);
+        setFinalAmount(paymentDetails.total_amount - paymentDetails.advance_payment);
+      }
+      catch(error){
+        console.error("Error fetching payment details:", error);
+        toast.error("Failed to fetch payment details.");
     }
-  }, [isPartialPayment, totalAmount, advanceAmount]);
+  }
 
   const handleSubmit = () => {
     const amountToPay = isPartialPayment ? partialAmount : finalAmount;

@@ -210,16 +210,8 @@ const Dashboard = () => {
             {showPaymentModal && (
                 <PaymentModal
                     onClose={() => setShowPaymentModal(false)}
-                    totalMilk={clientDashboard.total_liters}
-                    totalDays={clientDashboard.total_days}
-                    unpaidDays={clientDashboard.unpaid_days}
-                    totalAmount={clientDashboard.total_amount}
-                    advanceAmount={clientDashboard.advance_amount}
-                    onSubmit={(paymentData) => {
-                        // Handle payment submission logic here
-                        console.log("Payment Data:", paymentData);
-                        setShowPaymentModal(false);
-                    }}
+                    onSubmit={(clientSummary)}
+                    selectedMonth={selectedMonth}
                 />
             )}
             {showHistoryModal && (
