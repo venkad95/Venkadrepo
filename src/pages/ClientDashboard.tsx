@@ -97,6 +97,11 @@ const Dashboard = () => {
         }
     };
 
+    const paymentModel = (month: string) => {
+        setSelectedMonth(month);
+        setShowPaymentModal(true);
+    }
+
     const handleEditRow = (index: number, item: any) => {
         setEditingRow(index);
         setEditedRowData({ ...item }); // Pre-fill the row data for editing
@@ -194,7 +199,7 @@ const Dashboard = () => {
                                 <td>{item.total_liters}</td>
                                 <td>₹{item.amount}</td>
                                 <td><button className="view-btn" onClick={() => handleView(item.month, 1)}>View</button>
-                                <button className="view-btn" onClick={() => setShowPaymentModal(true)}>Payment</button></td>
+                                <button className="view-btn" onClick={() => paymentModel(item.month)}>Payment</button></td>
                             </tr>
                         ))}
                     </tbody>
