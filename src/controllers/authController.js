@@ -115,13 +115,15 @@ exports.signup = async (req, res) => {
         otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000),
       },
     );
-    const sendAck = await emailVerificationSent(email, otp);
-    if (sendAck) {
+    // const sendAck = await emailVerificationSent(email, otp);
+    // if (sendAck) {
       await db.AcknowledgeDetails.update({ isAcknowledged: true }, { where: { user_id: user.uuid } });
-    }
+    // }
     return res.status(201).json({
       success: true,
-      message: 'Otp sent your registered email, kindly check you spam folder!!',
+      data: otp,
+      // message: 'Otp sent your registered email, kindly check you spam folder!!',
+      message: `Please enter this OTP ${otp} and verify your account`
     });
 
   } catch (error) {
