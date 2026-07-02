@@ -5,6 +5,7 @@ import React from "react";
 import api from "../services/api.tsx";
 import moment from "moment";
 import Loader from "../components/Loader.tsx";
+import { toast } from "react-toastify";
 
 function Dashboard() {
   const [selectedClient, setSelectedClient] = useState<any>(null);
@@ -16,7 +17,9 @@ function Dashboard() {
   const [showAddRateModal, setShowAddRateModal] = useState(false);
   const [selectedClientForRate, setSelectedClientForRate] = useState<any>(null);
   const [productName, setProductName] = useState("");
-const [rate, setRate] = useState("");
+  const [rate, setRate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of users per page
 
 
   useEffect(() => {
@@ -61,27 +64,31 @@ const [rate, setRate] = useState("");
   };
   const handleSubmitRate = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     try {
       const response = await api.post("/product/product-configure-to-user", {
         userId: selectedClientForRate.uuid,
         product_name: productName,
         perliter_rate: rate,
       });
-  
+
       if (response.data.success) {
-        alert("Rate added successfully!");
+        toast.success("Rate added successfully!");
         setShowAddRateModal(false);
         setProductName("");
         setRate("");
       } else {
-        alert("Failed to add rate. Please try again.");
+        toast.error("Failed to add rate. Please try again.");
       }
     } catch (error) {
       console.error("Error adding rate:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     }
   };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentClients = clients.slice(indexOfFirstItem, indexOfLastItem);
 
   if (loading) return <Loader />
   return (
@@ -132,7 +139,7 @@ const [rate, setRate] = useState("");
             </thead>
 
             <tbody>
-              {clients.map((client) => (
+              {currentClients.map((client) => (
                 <tr key={client.uuid}>
                   <td>{client.firstName}</td>
                   <td>{client.lastName}</td>
@@ -162,9 +169,30 @@ const [rate, setRate] = useState("");
               ))}
             </tbody>
           </table>
+          <div className="pagination">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <span>
+              Page {currentPage} of {Math.ceil(clients.length / itemsPerPage)}
+            </span>
+            <button
+              onClick={() =>
+                setCurrentPage((prev) =>
+                  Math.min(prev + 1, Math.ceil(clients.length / itemsPerPage))
+                )
+              }
+              disabled={currentPage === Math.ceil(clients.length / itemsPerPage)}
+            >
+              Next
+            </button>
+          </div>
         </div>
-
       </div>
+
 
       {selectedClient && (
         <ClientHistoryModal
@@ -173,6 +201,7 @@ const [rate, setRate] = useState("");
         />
       )}
       {showAddRateModal && (
+
         <div className="modal-overlay">
           <div className="add-rate-modal">
             <div className="modal-header">

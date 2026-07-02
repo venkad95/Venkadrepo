@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import '../assets/styles/Header.css';
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,8 @@ type HeaderProps = {
 const Header = ({ title }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  // const menuRef = useRef<HTMLDivElement>(null); // Ref for the menu container
 
   const handleLogout = async () => {
     setLoading(true);
@@ -27,23 +29,40 @@ const Header = ({ title }) => {
       console.log(error);
     }
   };
-  const [menuOpen, setMenuOpen] = useState(false);
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+  //       setMenuOpen(false); // Close the menu
+  //     }
+  //   };
+
+  //   document.addEventListener("click", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("click", handleClickOutside);
+  //   };
+  // }, []);
+  
   if(loading) return <Loader/>
   return (
     <header className="header">
-      <div className="logo">
-        {title}
-      </div>
+      <div className="logo">{title}</div>
       <button
         className="menu-btn"
         onClick={() => setMenuOpen(!menuOpen)}
+        aria-label="Toggle menu"
       >
         ☰
       </button>
-      <nav className={`nav ${menuOpen ? "open" : ""}`}>
+      <nav className={`nav ${menuOpen ? "open" : ""}`}
+      // ref={menuRef}
+      >
         <a href="/about">About</a>
         <a href="/contact">Contact</a>
-         {localStorage.getItem('token') && <button className="logout-btn" onClick={handleLogout}>Logout</button>}
+        {localStorage.getItem("token") && (
+          <button className="logout-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        )}
       </nav>
     </header>
   );

@@ -1,12 +1,13 @@
+/* General Header Styles */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 25px;
-  background: #1b5e20;;
+  padding: 10px 20px;
+  background-color: #02750a;
   color: white;
-  font-size: 16px;
-  line-height: 1.6;
+  position: relative;
+  z-index: 1000; /* Ensure the header is above other elements */
 }
 
 .logo {
@@ -14,59 +15,59 @@
   font-weight: bold;
 }
 
-/* Desktop menu */
+.menu-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  display: none; /* Hidden by default, shown in mobile view */
+}
+
 .nav {
   display: flex;
-  gap: 20px;
+  gap: 15px;
 }
 
-.nav a {
+.nav a,
+.nav .logout-btn {
   color: white;
   text-decoration: none;
-}
-
-/* Mobile button hidden in desktop */
-.menu-btn {
-  display: none;
-  font-size: 24px;
-  background: none;
-  color: white;
-  border: none;
+  font-size: 16px;
   cursor: pointer;
 }
 
-/* Mobile view */
+.nav .logout-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.nav.open {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  background-color: #02750a;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1001; /* Ensure the menu is above other elements */
+}
+
+/* Responsive Styles */
 @media (max-width: 768px) {
   .menu-btn {
-    display: block;
+    display: block; /* Show menu button in mobile view */
   }
 
   .nav {
-    position: absolute;
-    top: 60px;
-    right: 0;
-    background: #111827;
-    flex-direction: column;
-    width: 200px;
-    padding: 15px;
-    display: none;
+    display: none; /* Hide the menu by default in mobile view */
   }
 
   .nav.open {
-    display: flex;
-  }
-  .logout-btn {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.3s;
-  }
-  
-  .logout-btn:hover {
-    background: #dc2626;
+    display: flex; /* Show the menu when open */
   }
 }

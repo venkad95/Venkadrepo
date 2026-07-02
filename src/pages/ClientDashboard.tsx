@@ -6,6 +6,7 @@ import api from "../services/api";
 import moment from "moment";
 import Loader from "../components/Loader";
 import { toast } from "react-toastify";
+import PaymentModal from "../components/PaymentModal";
 
 const Dashboard = () => {
     interface SummaryData {
@@ -26,6 +27,10 @@ const Dashboard = () => {
     const [timeBasedMessage, setTimeBasedMessage] = useState("");
     const [editingRow, setEditingRow] = useState<number | null>(null);
     const [editedRowData, setEditedRowData] = useState<any>({});
+    const [totalPages, setTotalPages] = useState(1); // Total pages from the server  
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(5); // Number of items per page
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
 
 
     useEffect(() => {
@@ -66,7 +71,7 @@ const Dashboard = () => {
         }
     };
 
-    const handleView = async (month: string) => {
+    const handleView = async (month: string, page = 1) => {
         setSelectedMonth(month);
         setShowHistoryModal(true);
         const formattedMonth = moment(
@@ -77,12 +82,13 @@ const Dashboard = () => {
         try {
 
             const response = await api.get(
-                `/product/client-history/${formattedMonth}`
+                `/product/client-history/${formattedMonth}?page=${page}&limit=${itemsPerPage}`
             );
             setLoading(false)
-            setHistoryData(response.data);
+            setHistoryData(response.data.data);
             setSelectedMonth(month);
-
+            setTotalPages(response.data.totalPages);
+            setCurrentPage(response.data.currentPage);
             setShowHistoryModal(true);
 
         } catch (error) {
@@ -91,12 +97,17 @@ const Dashboard = () => {
         }
     };
 
+    const paymentModel = (month: string) => {
+        setSelectedMonth(month);
+        setShowPaymentModal(true);
+    }
+
     const handleEditRow = (index: number, item: any) => {
         setEditingRow(index);
         setEditedRowData({ ...item }); // Pre-fill the row data for editing
-      };
-      
-      const handleSaveEdit = async (index: number) => {
+    };
+
+    const handleSaveEdit = async (index: number) => {
         try {
             const changedFields: any = {};
             if (editedRowData.morning_qty !== historyData[index].morning_qty) {
@@ -109,26 +120,26 @@ const Dashboard = () => {
                 uuid: editedRowData.uuid,
                 ...changedFields
             });
-          if (response.data.success) {
-            toast.success(response.data.message);
-            const updatedHistoryData = [...historyData];
-            updatedHistoryData[index] = editedRowData;
-            setHistoryData(updatedHistoryData);
-            setEditingRow(null);
-            handleView(selectedMonth); // Refresh the history data after saving
-          } else {
-            toast.error("Failed to update row. Please try again.");
-          }
+            if (response.data.success) {
+                toast.success(response.data.message);
+                const updatedHistoryData = [...historyData];
+                updatedHistoryData[index] = editedRowData;
+                setHistoryData(updatedHistoryData);
+                setEditingRow(null);
+                handleView(selectedMonth); // Refresh the history data after saving
+            } else {
+                toast.error("Failed to update row. Please try again.");
+            }
         } catch (error) {
-          console.error("Error updating row:", error);
-          toast.error("An error occurred. Please try again.");
+            console.error("Error updating row:", error);
+            toast.error("An error occurred. Please try again.");
         }
-      };
-      
-      const handleCancelEdit = () => {
+    };
+
+    const handleCancelEdit = () => {
         setEditingRow(null);
         setEditedRowData({});
-      };
+    };
 
     if (loading) return <Loader />
 
@@ -179,7 +190,7 @@ const Dashboard = () => {
                     </thead>
 
                     <tbody>
-                        {summaryData.map((item, index) => (
+                        {summaryData?.map((item, index) => (
                             <tr key={index}>
 
                                 <td>{item.month}</td>
@@ -187,7 +198,8 @@ const Dashboard = () => {
                                 <td>{item.product_name}</td>
                                 <td>{item.total_liters}</td>
                                 <td>₹{item.amount}</td>
-                                <td><button className="view-btn" onClick={() => handleView(item.month)}>View</button></td>
+                                <td><button className="view-btn" onClick={() => handleView(item.month, 1)}>View</button>
+                                <button className="view-btn" onClick={() => paymentModel(item.month)}>Payment</button></td>
                             </tr>
                         ))}
                     </tbody>
@@ -198,6 +210,13 @@ const Dashboard = () => {
                 <PurchaseModal
                     onClose={() => setShowModal(false)}
                     onSuccess={clientSummary}
+                />
+            )}
+            {showPaymentModal && (
+                <PaymentModal
+                    onClose={() => setShowPaymentModal(false)}
+                    onSubmit={(clientSummary)}
+                    selectedMonth={selectedMonth}
                 />
             )}
             {showHistoryModal && (
@@ -234,7 +253,7 @@ const Dashboard = () => {
 
                                 <tbody>
 
-                                    {historyData.map((item: any, index:number) => (
+                                    {historyData?.map((item: any, index: number) => (
                                         <tr key={item.id}>
                                             <td>
                                                 {editingRow === index ? (
@@ -280,14 +299,32 @@ const Dashboard = () => {
                                                     item.evening_qty
                                                 )}
                                             </td>
-                                            
+
                                             <td>₹{item.purchased_liter_amount}</td>
                                         </tr>
                                     ))}
 
                                 </tbody>
                             </table>
-
+                            <div className="pagination">
+                                <button
+                                    onClick={() => handleView(selectedMonth, Math.max(currentPage - 1, 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    Previous
+                                </button>
+                                <span>
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <button
+                                    onClick={() =>
+                                        handleView(selectedMonth, Math.min(currentPage + 1, totalPages))
+                                    }
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Next
+                                </button>
+                            </div>
                         </div>
 
                     </div>

@@ -14,7 +14,7 @@ const PurchaseModal = ({ onClose, onSuccess }: PurchaseModalProps) => {
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
-        product_name: "",
+        product_name: "Milk",
         buying_date: "",
         morning_qty: "",
         evening_qty: "",
