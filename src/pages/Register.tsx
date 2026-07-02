@@ -44,24 +44,27 @@ const Register = () => {
     setLoading(true)
     try {
       if (!formData.firstName) {
-        alert("First Name is required");
+        toast.error("First Name is required");
+        setLoading(false);
         return;
       }
 
       if (!formData.email) {
-        alert("Email is required");
+        toast.error("Email is required");
+        setLoading(false);
         return;
       }
 
       if (!formData.password) {
-        alert("Password is required");
+        toast.error("Password is required");
+        setLoading(false);
         return;
       }
       // Password validation
       const passwordRegex =
         /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
       if (!passwordRegex.test(formData.password)) {
-        alert(
+        toast.error(
           "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character."
         );
         setLoading(false);
@@ -70,7 +73,7 @@ const Register = () => {
       const response = await api.post("/auth/signup", formData);
       setLoading(false)
       const userData = response.data;
-      toast.success(response.data.message);
+      toast.success(response.data.message,{ autoClose: 240000 });
       // localStorage.setItem("token",userData.data.accessToken);
       // localStorage.setItem("user",JSON.stringify(userData.data.user));
       navigate("/otp-verify");
