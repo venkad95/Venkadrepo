@@ -27,7 +27,8 @@ const OtpVerify = () => {
         try {
             const response = await api.post("/auth/verify-otp", { otp });
             if (response.data.success) {
-                toast.success("OTP verified successfully!");
+                toast.dismiss();
+                toast.success("OTP verified successfully!",{});
                 const userData = response.data;
                 localStorage.setItem("token", userData.accessToken);
                 localStorage.setItem("user", JSON.stringify(userData.user));
