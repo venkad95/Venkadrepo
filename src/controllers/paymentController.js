@@ -1,6 +1,43 @@
 const db = require('../models');
 const Op = db.Sequelize.Op;
 
+exports.generatePayment = async(req, res) => {
+    console.log(req.body);
+    
+    const { userId, month } = req.body;
+
+    if (!userId || !month) {
+        return res.status(400).json({
+            success: false,
+            message: 'userId and month are required'
+        });
+    }
+
+    try {
+        // Call the stored procedure
+        await db.sequelize.query(
+            `SELECT generate_payment(:user_id_input, :month_input)`,
+            {
+                replacements: {
+                    user_id_input: userId,
+                    month_input: month
+                }
+            }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Payment generated successfully'
+        });
+    } catch (err) {
+        console.error('Error generating payment:', err);
+        return res.status(500).json({
+            success: false,
+            message: 'An error occurred while generating the payment'
+        });
+    }
+}
+
 exports.getPaymentDetails = async (req, res) => {
     try {
         const { from_date, to_date } = req.query;

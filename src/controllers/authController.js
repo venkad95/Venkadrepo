@@ -216,16 +216,36 @@ exports.getOverAllDashboardList = async (req, res) => {
           model: db.ProductDetails,
           as: 'ProductDetails', // Use the alias defined in the association
           attributes: [],
-          required: true
-        }
+          required: false
+        },
+        // include: [
+          {
+            model: db.Payments,
+            as: 'Payments', // Use the alias defined in the association
+            attributes: [],
+            required: false,
+            where:{payment_status: 'completed'}
+          }
+        // ],
       ],
       attributes: [
         [db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('ProductDetails.total_liters')), 0), 'totalLiters'],
-        [db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('ProductDetails.total_amount')), 0), 'totalAmount'],
+        [db.sequelize.fn('COALESCE', db.sequelize.fn('SUM', db.sequelize.col('ProductDetails.purchased_liter_amount')), 0), 'totalAmount'],
+        [
+          db.sequelize.fn(
+            'COALESCE',
+            db.sequelize.fn(
+              'SUM',
+              db.sequelize.literal(`CASE WHEN "Payments"."payment_status" = 'completed' THEN "Payments"."final_amount" ELSE 0 END`)
+            ),
+            0
+          ),
+          'paidAmount',
+        ],
         [db.sequelize.fn('COUNT', db.sequelize.fn('DISTINCT', db.sequelize.col('UserDetails.uuid'))), 'totalClients']
       ],
-      group: ['UserDetails.uuid'],
-      raw: true
+      raw: true,
+      logging: console.log,
     });
 
     if (usersList || getDashboard) {

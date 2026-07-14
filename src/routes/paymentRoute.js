@@ -4,6 +4,7 @@ const paymentController = require('../controllers/paymentController');
 const authMiddel = require('../middelware/authMiddel');
 const { authorize } = require('../middelware/authorizeMiddel');
 
+router.post('/generate-payment', authMiddel.checkaccessToken, authorize(['owner']), paymentController.generatePayment);
 router.get('/get-payment-details', authMiddel.checkaccessToken, authorize(['owner', 'client']), paymentController.getPaymentDetails);
 router.put('/update-advance-payment/:uuid', authMiddel.checkaccessToken, authorize(['client']), paymentController.updateAdvancePayment);
 router.put('/update-partial-payment/:uuid', authMiddel.checkaccessToken, authorize(['client']), paymentController.saveFinalPayment);

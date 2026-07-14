@@ -44,39 +44,39 @@ exports.createProductEntry = async (req, res) => {
             purchased_liter_amount: totalLiters * checkProductRate.perliter_rate,
             perliter_rate: checkProductRate.perliter_rate || null
         })
-        const existingPayment = await db.Payments.findOne({
-            where: {
-                user_id: req.body.userId,
-                from_date: {
-                    [Op.gte]: new Date(new Date(buying_date).getFullYear(), new Date(buying_date).getMonth(), 1), // Start of the month
-                    [Op.lt]: new Date(new Date(buying_date).getFullYear(), new Date(buying_date).getMonth() + 1, 1) // Start of the next month
-                }
-            }
-        });
-        if (!existingPayment) {
-            await db.Payments.create({
-                user_id: req.body.userId,
-                product_name,
-                perliter_rate: checkProductRate.perliter_rate || null,
-                from_date: buying_date,
-                to_date: buying_date,
-                total_liter: totalLiters,
-                total_amount: totalLiters * checkProductRate.perliter_rate,
-                advance_payment: 0,
-                partial_payment: 0,
-                full_payment: 0,
-                payment_status: 'pending'
-            })
-        }
-        else{
-            await db.Payments.update({
-                to_date: buying_date,
-                total_liter: existingPayment.total_liter + totalLiters,
-                total_amount: existingPayment.total_amount + (totalLiters * checkProductRate.perliter_rate),
-            }, {
-                where: { uuid: existingPayment.uuid }
-            });
-        }
+        // const existingPayment = await db.Payments.findOne({
+        //     where: {
+        //         user_id: req.body.userId,
+        //         from_date: {
+        //             [Op.gte]: new Date(new Date(buying_date).getFullYear(), new Date(buying_date).getMonth(), 1), // Start of the month
+        //             [Op.lt]: new Date(new Date(buying_date).getFullYear(), new Date(buying_date).getMonth() + 1, 1) // Start of the next month
+        //         }
+        //     }
+        // });
+        // if (!existingPayment) {
+        //     await db.Payments.create({
+        //         user_id: req.body.userId,
+        //         product_name,
+        //         perliter_rate: checkProductRate.perliter_rate || null,
+        //         from_date: buying_date,
+        //         to_date: buying_date,
+        //         total_liter: totalLiters,
+        //         total_amount: totalLiters * checkProductRate.perliter_rate,
+        //         advance_payment: 0,
+        //         partial_payment: 0,
+        //         full_payment: 0,
+        //         payment_status: 'pending'
+        //     })
+        // }
+        // else{
+        //     await db.Payments.update({
+        //         to_date: buying_date,
+        //         total_liter: existingPayment.total_liter + totalLiters,
+        //         total_amount: existingPayment.total_amount + (totalLiters * checkProductRate.perliter_rate),
+        //     }, {
+        //         where: { uuid: existingPayment.uuid }
+        //     });
+        // }
         if (entryDetails) {
             return res.status(201).json({
                 success: true,
@@ -147,23 +147,23 @@ exports.updateProductQuantities = async (req, res) => {
                 where: { uuid }
             }
         );
-        const existingPayment = await db.Payments.findOne({
-            where: {
-                user_id: findRecod.user_id,
-                from_date: {
-                    [Op.gte]: new Date(new Date(findRecod.buying_date).getFullYear(), new Date(findRecod.buying_date).getMonth(), 1), // Start of the month
-                    [Op.lt]: new Date(new Date(findRecod.buying_date).getFullYear(), new Date(findRecod.buying_date).getMonth() + 1, 1) // Start of the next month
-                }
-            }
-        });
-        
-        await db.Payments.update({
-            to_date: findRecod.buying_date,
-            total_liter: existingPayment.total_liter + newTotalLiters,
-            total_amount: existingPayment.total_amount + (newTotalLiters * checkProductRate.perliter_rate),
-        }, {
-            where: { uuid: existingPayment.uuid }
-        });
+        // const existingPayment = await db.Payments.findOne({
+        //     where: {
+        //         user_id: findRecod.user_id,
+        //         from_date: {
+        //             [Op.gte]: new Date(new Date(findRecod.buying_date).getFullYear(), new Date(findRecod.buying_date).getMonth(), 1), // Start of the month
+        //             [Op.lt]: new Date(new Date(findRecod.buying_date).getFullYear(), new Date(findRecod.buying_date).getMonth() + 1, 1) // Start of the next month
+        //         }
+        //     }
+        // });
+
+        // await db.Payments.update({
+        //     to_date: findRecod.buying_date,
+        //     total_liter: existingPayment.total_liter + newTotalLiters,
+        //     total_amount: existingPayment.total_amount + (newTotalLiters * checkProductRate.perliter_rate),
+        // }, {
+        //     where: { uuid: existingPayment.uuid }
+        // });
         if (updated) {
             return res.status(200).json({
                 success: true,
@@ -264,7 +264,10 @@ exports.getMonthHistory = async (req, res) => {
     try {
         const offset = (page - 1) * limit;
         const totaData = await db.ProductDetails.findAll({
-            attributes: ['uuid'],
+            attributes: [
+                'uuid',
+                [db.sequelize.fn("SUM", db.sequelize.col("total_liters")), "total_liters"]
+            ],
             where: {
                 [Op.and]: [{
                     buying_date: {
@@ -274,25 +277,35 @@ exports.getMonthHistory = async (req, res) => {
                 },
                 { user_id: req.query.userid ? req.query.userid : req.user.userId }]
             },
+            group: ['uuid']
         });
         const data = await db.ProductDetails.findAll({
-            attributes: ['uuid', 'user_id', 'product_name', 'morning_qty', 'evening_qty', 'buying_date', 'updatedAt', 'purchased_liter_amount'],
+            attributes: [
+                'uuid',
+                'user_id',
+                'product_name',
+                'morning_qty',
+                'evening_qty',
+                'buying_date',
+                'updatedAt',
+                'purchased_liter_amount',
+            ],
             where: {
-                [Op.and]: [{
-                    buying_date: {
-                        [Op.gte]: startDate,
-                        [Op.lt]: endDate
-                    }
-                },
-                { user_id: req.query.userid ? req.query.userid : req.user.userId }]
+                [Op.and]: [
+                    {
+                        buying_date: {
+                            [Op.gte]: startDate,
+                            [Op.lt]: endDate
+                        }
+                    },
+                    { user_id: req.query.userid ? req.query.userid : req.user.userId }
+                ]
             },
-            order: [
-                ["buying_date", "DESC"]],
-            limit: parseInt(limit), // Number of records per page
-            offset: parseInt(offset)
-
+            order: [["buying_date", "DESC"]],
+            limit: parseInt(req.query.limit) || 10, // Default limit = 10
+            offset: parseInt(req.query.offset) || 0 // Default offset = 0
         });
-
+        const totalLiters = totaData.map(item => item.total_liters).reduce((acc, curr) => acc + parseFloat(curr), 0);        
         // return res.json(data);
 
         return res.json({
@@ -300,7 +313,9 @@ exports.getMonthHistory = async (req, res) => {
             currentPage: parseInt(page),
             totalPages: Math.ceil(totaData.length / limit),
             totalRecords: totaData.count,
-            data: data
+            data: data,
+            totalLiters: totalLiters,
+            totalDays : totaData.length
         });
     }
     catch (err) {
