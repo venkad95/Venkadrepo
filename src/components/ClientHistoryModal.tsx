@@ -3,6 +3,7 @@ import '../assets/styles/ClientDashboard.css';
 import api from "../services/api";
 import Loader from "./Loader";
 import moment from "moment";
+import { toast } from "react-toastify";
 
 type Props = {
   client: any;
@@ -65,6 +66,29 @@ const ClientHistoryModal = ({
       console.log(error);
     }
   };
+
+  const generatePayment = async (month: string, ) => {
+    console.log(month,'---');
+    
+    const formattedMonth = moment(month, "MMM-YYYY").format("YYYY-MM-01");
+    console.log(formattedMonth);
+    
+    try {
+      const response = await api.post(`/payment/generate-payment`, {
+        userId: client.uuid,
+        month: formattedMonth
+      })
+
+      if (response.data.success) {
+        toast.success("Payment generated successfully!");
+      } else {
+        toast.error("Failed to generate payment.");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("An error occurred while generating payment.");
+    }
+  }
   if (loading) return <Loader />
   return (
     <div className="modal-overlay">
@@ -81,6 +105,7 @@ const ClientHistoryModal = ({
               <th>Liters</th>
               <th>Amount</th>
               <th>Action</th>
+              <th>Payment</th>
             </tr>
           </thead>
 
@@ -93,6 +118,7 @@ const ClientHistoryModal = ({
                 <td>{item.total_liters}</td>
                 <td>₹{item.amount}</td>
                 <td><button className="view-btn" onClick={() => handleView(item.month, 1)}>View</button></td>
+                <td><button className="view-btn" onClick={() => generatePayment(item.month)}>Generate Payment</button></td>
               </tr>
             ))}
           </tbody>
