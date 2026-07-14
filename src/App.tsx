@@ -16,6 +16,7 @@ import GreetingPage from "./pages/GreetingPage";
 import OtpVerify from "./pages/OtpVerify";
 import AuthorizationRole from "./components/authorizationRole";
 import ResetPassword from "./pages/ResetPassword";
+import ClientHistoryPage from "./pages/ClientHistoryPage";
 
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
         <Route path="/client-dashboard" element={<AuthorizationRole allowedRoles={['owner','client']}><ClientDashboard/></AuthorizationRole> }/>
         <Route path="/forgot-password" element={<ForgotPassword />} /> 
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/purchase-history" element={<AuthorizationRole allowedRoles={['client']}><ClientHistoryPage/></AuthorizationRole>} />
       </Routes>
     </Layout>
   </BrowserRouter>

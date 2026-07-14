@@ -35,7 +35,7 @@ const Login = () =>{
         navigate("/dashboard");
       }
       else{
-        navigate("/client-dashboard")
+        navigate("/purchase-history")
       }
 
     } catch (error: any) {
